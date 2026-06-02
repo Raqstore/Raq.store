@@ -914,10 +914,12 @@
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.nodes = [];
-        this.lines = [];
+        this.entangledPairs = [];
         this.animationId = null;
+        this.time = 0;
         this.resize();
         this.initNodes();
+        this.initEntanglement();
         this.animate();
         window.addEventListener('resize', () => this.resize());
       }
@@ -928,40 +930,178 @@
       }
 
       initNodes() {
-        const nodeCount = Math.floor((this.canvas.width * this.canvas.height) / 25000);
+        const nodeCount = Math.floor((this.canvas.width * this.canvas.height) / 22000);
         this.nodes = [];
         for (let i = 0; i < nodeCount; i++) {
+          const isQuantum = Math.random() > 0.6;
           this.nodes.push({
             x: Math.random() * this.canvas.width,
             y: Math.random() * this.canvas.height,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: (Math.random() - 0.5) * 0.3,
-            radius: Math.random() * 2 + 1,
-            alpha: Math.random() * 0.5 + 0.2
+            vx: (Math.random() - 0.5) * 0.25,
+            vy: (Math.random() - 0.5) * 0.25,
+            radius: isQuantum ? Math.random() * 2.5 + 1.5 : Math.random() * 2 + 1,
+            alpha: Math.random() * 0.5 + 0.3,
+            isQuantum: isQuantum,
+            qubitState: isQuantum ? Math.random() > 0.5 ? 0 : 1 : -1,
+            qubitPhase: Math.random() * Math.PI * 2,
+            probability: 1,
+            tunnelTimer: 0,
+            tunnelTarget: null
           });
+        }
+      }
+
+      initEntanglement() {
+        this.entangledPairs = [];
+        const shuffled = [...this.nodes].sort(() => Math.random() - 0.5);
+        for (let i = 0; i < shuffled.length - 1; i += 2) {
+          if (shuffled[i].isQuantum && shuffled[i + 1].isQuantum) {
+            this.entangledPairs.push([shuffled[i], shuffled[i + 1]]);
+          }
         }
       }
 
       animate() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.time += 0.016;
         this.updateNodes();
+        this.updateEntanglement();
+        this.drawProbabilityClouds();
+        this.drawEntangledLines();
         this.drawLines();
         this.drawNodes();
+        this.drawQuantumEffects();
         this.animationId = requestAnimationFrame(() => this.animate());
       }
 
       updateNodes() {
         this.nodes.forEach(node => {
-          node.x += node.vx;
-          node.y += node.vy;
+          if (node.tunnelTarget) {
+            node.tunnelTimer += 0.05;
+            const t = node.tunnelTimer;
+            if (t >= 1) {
+              node.x = node.tunnelTarget.x;
+              node.y = node.tunnelTarget.y;
+              node.tunnelTarget = null;
+              node.tunnelTimer = 0;
+              node.qubitState = node.qubitState === 0 ? 1 : 0;
+            } else {
+              const eased = this.easeInOutQuad(t);
+              node.x = node.x * (1 - eased) + node.tunnelTarget.x * eased;
+              node.y = node.y * (1 - eased) + node.tunnelTarget.y * eased;
+            }
+          } else {
+            node.x += node.vx;
+            node.y += node.vy;
 
-          if (node.x < 0 || node.x > this.canvas.width) {
-            node.vx *= -1;
-            node.x = Math.max(0, Math.min(this.canvas.width, node.x));
+            if (node.x < 0 || node.x > this.canvas.width) {
+              node.vx *= -1;
+              node.x = Math.max(0, Math.min(this.canvas.width, node.x));
+            }
+            if (node.y < 0 || node.y > this.canvas.height) {
+              node.vy *= -1;
+              node.y = Math.max(0, Math.min(this.canvas.height, node.y));
+            }
+
+            if (node.isQuantum && Math.random() < 0.002) {
+              const candidates = this.nodes.filter(n => n !== node && n.isQuantum);
+              if (candidates.length > 0) {
+                node.tunnelTarget = candidates[Math.floor(Math.random() * candidates.length)];
+                node.tunnelTimer = 0;
+              }
+            }
           }
-          if (node.y < 0 || node.y > this.canvas.height) {
-            node.vy *= -1;
-            node.y = Math.max(0, Math.min(this.canvas.height, node.y));
+
+          if (node.isQuantum) {
+            node.qubitPhase += 0.03;
+            node.probability = 0.5 + 0.3 * Math.sin(node.qubitPhase);
+            if (Math.random() < 0.001) {
+              node.qubitState = node.qubitState === 0 ? 1 : 0;
+            }
+          }
+        });
+      }
+
+      updateEntanglement() {
+        this.entangledPairs.forEach(pair => {
+          if (Math.random() < 0.005) {
+            const newState = pair[0].qubitState === 0 ? 1 : 0;
+            pair[0].qubitState = newState;
+            pair[1].qubitState = newState;
+          }
+        });
+      }
+
+      drawProbabilityClouds() {
+        this.nodes.forEach(node => {
+          if (node.isQuantum && node.probability > 0.5) {
+            const cloudRadius = node.radius * (8 + 4 * Math.sin(this.time * 2 + node.qubitPhase));
+            const gradient = this.ctx.createRadialGradient(
+              node.x, node.y, 0,
+              node.x, node.y, cloudRadius
+            );
+            const alpha = node.probability * 0.08;
+            gradient.addColorStop(0, `rgba(100, 200, 255, ${alpha})`);
+            gradient.addColorStop(0.5, `rgba(150, 150, 255, ${alpha * 0.5})`);
+            gradient.addColorStop(1, 'rgba(100, 200, 255, 0)');
+
+            this.ctx.beginPath();
+            this.ctx.arc(node.x, node.y, cloudRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = gradient;
+            this.ctx.fill();
+          }
+        });
+      }
+
+      drawEntangledLines() {
+        this.entangledPairs.forEach(pair => {
+          const dx = pair[0].x - pair[1].x;
+          const dy = pair[0].y - pair[1].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 200) {
+            const midX = (pair[0].x + pair[1].x) / 2;
+            const midY = (pair[0].y + pair[1].y) / 2;
+            const perpX = -dy * 0.2;
+            const perpY = dx * 0.2;
+
+            const wave = Math.sin(this.time * 3 + pair[0].qubitPhase) * 20;
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(pair[0].x, pair[0].y);
+            this.ctx.quadraticCurveTo(
+              midX + perpX + wave,
+              midY + perpY,
+              pair[1].x, pair[1].y
+            );
+            const opacity = 0.4 * (1 - distance / 200);
+            this.ctx.strokeStyle = pair[0].qubitState === 0 
+              ? `rgba(100, 200, 255, ${opacity})`
+              : `rgba(200, 100, 255, ${opacity})`;
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+
+            const particleProgress = (Date.now() / 1500) % 1;
+            const isForward = particleProgress < 0.5;
+            const t = isForward ? particleProgress * 2 : (1 - particleProgress) * 2;
+            const easedT = this.easeInOutQuad(t);
+            
+            let particleX, particleY;
+            if (easedT < 1) {
+              const segMidX = pair[0].x + (midX + perpX + wave - pair[0].x) * easedT;
+              const segMidY = pair[0].y + (midY + perpY - pair[0].y) * easedT;
+              particleX = pair[0].x + (segMidX - pair[0].x) * easedT;
+              particleY = pair[0].y + (segMidY - pair[0].y) * easedT;
+            } else {
+              const t2 = easedT - 1;
+              particleX = midX + perpX + wave + (pair[1].x - (midX + perpX + wave)) * t2;
+              particleY = midY + perpY + (pair[1].y - (midY + perpY)) * t2;
+            }
+
+            this.ctx.beginPath();
+            this.ctx.arc(particleX, particleY, 3, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 1.5})`;
+            this.ctx.fill();
           }
         });
       }
@@ -975,21 +1115,30 @@
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < maxDistance) {
-              const opacity = (1 - distance / maxDistance) * 0.3;
+              const opacity = (1 - distance / maxDistance) * 0.25;
+              const isBothQuantum = node1.isQuantum && node2.isQuantum;
+              const color = isBothQuantum 
+                ? `rgba(150, 180, 255, ${opacity})`
+                : `rgba(201, 162, 39, ${opacity})`;
+
               this.ctx.beginPath();
-              this.ctx.strokeStyle = `rgba(201, 162, 39, ${opacity})`;
-              this.ctx.lineWidth = 1;
+              this.ctx.strokeStyle = color;
+              this.ctx.lineWidth = isBothQuantum ? 1.5 : 1;
+              this.ctx.setLineDash(isBothQuantum ? [4, 4] : []);
               this.ctx.moveTo(node1.x, node1.y);
               this.ctx.lineTo(node2.x, node2.y);
               this.ctx.stroke();
+              this.ctx.setLineDash([]);
 
-              const progress = (Date.now() / 2000) % 1;
+              const progress = (Date.now() / 2500) % 1;
               const waveX = node1.x + (node2.x - node1.x) * progress;
               const waveY = node1.y + (node2.y - node1.y) * progress;
               
               this.ctx.beginPath();
-              this.ctx.arc(waveX, waveY, 2, 0, Math.PI * 2);
-              this.ctx.fillStyle = `rgba(201, 162, 39, ${opacity * 2})`;
+              this.ctx.arc(waveX, waveY, isBothQuantum ? 2.5 : 2, 0, Math.PI * 2);
+              this.ctx.fillStyle = isBothQuantum 
+                ? `rgba(150, 200, 255, ${opacity * 2})`
+                : `rgba(201, 162, 39, ${opacity * 2})`;
               this.ctx.fill();
             }
           });
@@ -998,23 +1147,75 @@
 
       drawNodes() {
         this.nodes.forEach(node => {
-          const gradient = this.ctx.createRadialGradient(
-            node.x, node.y, 0,
-            node.x, node.y, node.radius * 3
-          );
-          gradient.addColorStop(0, `rgba(201, 162, 39, ${node.alpha})`);
-          gradient.addColorStop(1, 'rgba(201, 162, 39, 0)');
+          if (node.isQuantum) {
+            const glowRadius = node.radius * (4 + 2 * Math.sin(this.time * 3 + node.qubitPhase));
+            const gradient = this.ctx.createRadialGradient(
+              node.x, node.y, 0,
+              node.x, node.y, glowRadius
+            );
 
-          this.ctx.beginPath();
-          this.ctx.arc(node.x, node.y, node.radius * 3, 0, Math.PI * 2);
-          this.ctx.fillStyle = gradient;
-          this.ctx.fill();
+            const mainColor = node.qubitState === 0 ? [100, 200, 255] : [200, 100, 255];
+            gradient.addColorStop(0, `rgba(${mainColor[0]}, ${mainColor[1]}, ${mainColor[2]}, ${node.alpha})`);
+            gradient.addColorStop(0.5, `rgba(${mainColor[0]}, ${mainColor[1]}, ${mainColor[2]}, ${node.alpha * 0.3})`);
+            gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
 
-          this.ctx.beginPath();
-          this.ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-          this.ctx.fillStyle = `rgba(201, 162, 39, ${node.alpha})`;
-          this.ctx.fill();
+            this.ctx.beginPath();
+            this.ctx.arc(node.x, node.y, glowRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = gradient;
+            this.ctx.fill();
+
+            this.ctx.beginPath();
+            this.ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(${mainColor[0]}, ${mainColor[1]}, ${mainColor[2]}, ${node.alpha})`;
+            this.ctx.fill();
+
+            this.ctx.beginPath();
+            this.ctx.arc(node.x, node.y, node.radius * 1.5, 0, Math.PI * 2);
+            this.ctx.strokeStyle = `rgba(${mainColor[0]}, ${mainColor[1]}, ${mainColor[2]}, ${node.alpha * 0.5})`;
+            this.ctx.lineWidth = 1;
+            this.ctx.stroke();
+          } else {
+            const gradient = this.ctx.createRadialGradient(
+              node.x, node.y, 0,
+              node.x, node.y, node.radius * 3
+            );
+            gradient.addColorStop(0, `rgba(201, 162, 39, ${node.alpha})`);
+            gradient.addColorStop(1, 'rgba(201, 162, 39, 0)');
+
+            this.ctx.beginPath();
+            this.ctx.arc(node.x, node.y, node.radius * 3, 0, Math.PI * 2);
+            this.ctx.fillStyle = gradient;
+            this.ctx.fill();
+
+            this.ctx.beginPath();
+            this.ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(201, 162, 39, ${node.alpha})`;
+            this.ctx.fill();
+          }
         });
+      }
+
+      drawQuantumEffects() {
+        this.nodes.forEach(node => {
+          if (node.isQuantum && Math.random() < 0.05) {
+            const rippleCount = 3;
+            for (let i = 0; i < rippleCount; i++) {
+              const delay = this.time * 10 + i * 0.3;
+              const radius = (delay % 1) * 20;
+              const alpha = (1 - delay % 1) * 0.3;
+              
+              this.ctx.beginPath();
+              this.ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+              this.ctx.strokeStyle = `rgba(150, 200, 255, ${alpha})`;
+              this.ctx.lineWidth = 1;
+              this.ctx.stroke();
+            }
+          }
+        });
+      }
+
+      easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
       }
 
       destroy() {
