@@ -110,13 +110,9 @@
       background-size: 128px 128px;
     }
 
-    .bg-nodes {
+    .network-canvas {
       position: absolute;
       inset: 0;
-      pointer-events: none;
-    }
-
-    .bg-nodes canvas {
       width: 100%;
       height: 100%;
     }
@@ -588,9 +584,7 @@
     <div class="bg-gradient-2"></div>
     <div class="bg-grid"></div>
     <div class="bg-noise"></div>
-    <div class="bg-nodes">
-      <canvas id="nodesCanvas"></canvas>
-    </div>
+    <canvas class="network-canvas" id="networkCanvas"></canvas>
   </div>
 
   <header class="header fade-in">
@@ -674,188 +668,6 @@
   </footer>
 
   <script>
-    class NodeNetwork {
-      constructor(canvas) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
-        this.nodes = [];
-        this.mouse = { x: null, y: null };
-        this.connectionDistance = 180;
-        this.hoverRadius = 120;
-        this.init();
-      }
-
-      init() {
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
-        this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
-        this.createNodes();
-        this.animate();
-      }
-
-      resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-      }
-
-      createNodes() {
-        this.nodes = [];
-        const nodeCount = Math.floor((this.canvas.width * this.canvas.height) / 15000);
-        for (let i = 0; i < nodeCount; i++) {
-          this.nodes.push({
-            x: Math.random() * this.canvas.width,
-            y: Math.random() * this.canvas.height,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: (Math.random() - 0.5) * 0.3,
-            radius: Math.random() * 2 + 1,
-            baseRadius: 0,
-            pulsePhase: Math.random() * Math.PI * 2
-          });
-        }
-      }
-
-      handleMouseMove(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        this.mouse.x = e.clientX - rect.left;
-        this.mouse.y = e.clientY - rect.top;
-      }
-
-      handleMouseLeave() {
-        this.mouse.x = null;
-        this.mouse.y = null;
-      }
-
-      animate() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.updateNodes();
-        this.drawConnections();
-        this.drawNodes();
-        requestAnimationFrame(() => this.animate());
-      }
-
-      updateNodes() {
-        this.nodes.forEach(node => {
-          node.x += node.vx;
-          node.y += node.vy;
-
-          if (node.x < 0 || node.x > this.canvas.width) node.vx *= -1;
-          if (node.y < 0 || node.y > this.canvas.height) node.vy *= -1;
-
-          if (this.mouse.x !== null) {
-            const dx = this.mouse.x - node.x;
-            const dy = this.mouse.y - node.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < this.hoverRadius) {
-              const force = (this.hoverRadius - dist) / this.hoverRadius;
-              node.vx -= dx * force * 0.003;
-              node.vy -= dy * force * 0.003;
-              node.baseRadius = node.radius + force * 2;
-            } else {
-              node.baseRadius = node.radius;
-            }
-          } else {
-            node.baseRadius = node.radius;
-          }
-        });
-      }
-
-      drawConnections() {
-        for (let i = 0; i < this.nodes.length; i++) {
-          for (let j = i + 1; j < this.nodes.length; j++) {
-            const dx = this.nodes[i].x - this.nodes[j].x;
-            const dy = this.nodes[i].y - this.nodes[j].y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < this.connectionDistance) {
-              const opacity = (1 - dist / this.connectionDistance) * 0.25;
-              this.ctx.beginPath();
-              this.ctx.strokeStyle = `rgba(201, 162, 39, ${opacity})`;
-              this.ctx.lineWidth = 0.5;
-              this.ctx.moveTo(this.nodes[i].x, this.nodes[i].y);
-              this.ctx.lineTo(this.nodes[j].x, this.nodes[j].y);
-              this.ctx.stroke();
-
-              if (this.mouse.x !== null) {
-                const distToMouse = Math.min(
-                  Math.sqrt(Math.pow(this.mouse.x - this.nodes[i].x, 2) + Math.pow(this.mouse.y - this.nodes[i].y, 2)),
-                  Math.sqrt(Math.pow(this.mouse.x - this.nodes[j].x, 2) + Math.pow(this.mouse.y - this.nodes[j].y, 2))
-                );
-
-                if (distToMouse < this.hoverRadius) {
-                  const mouseOpacity = (1 - distToMouse / this.hoverRadius) * 0.4;
-                  this.ctx.beginPath();
-                  this.ctx.strokeStyle = `rgba(201, 162, 39, ${mouseOpacity})`;
-                  this.ctx.lineWidth = 1;
-                  this.ctx.moveTo(this.nodes[i].x, this.nodes[i].y);
-                  this.ctx.lineTo(this.nodes[j].x, this.nodes[j].y);
-                  this.ctx.stroke();
-                }
-              }
-            }
-          }
-        }
-
-        if (this.mouse.x !== null) {
-          this.nodes.forEach(node => {
-            const dx = this.mouse.x - node.x;
-            const dy = this.mouse.y - node.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < this.hoverRadius) {
-              const opacity = (1 - dist / this.hoverRadius) * 0.2;
-              this.ctx.beginPath();
-              this.ctx.strokeStyle = `rgba(201, 162, 39, ${opacity})`;
-              this.ctx.lineWidth = 0.5;
-              this.ctx.moveTo(this.mouse.x, this.mouse.y);
-              this.ctx.lineTo(node.x, node.y);
-              this.ctx.stroke();
-            }
-          });
-        }
-      }
-
-      drawNodes() {
-        this.nodes.forEach(node => {
-          const pulse = Math.sin(Date.now() * 0.002 + node.pulsePhase) * 0.5 + 0.5;
-          const radius = node.baseRadius + pulse * 0.5;
-
-          if (this.mouse.x !== null) {
-            const dx = this.mouse.x - node.x;
-            const dy = this.mouse.y - node.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < this.hoverRadius) {
-              const glowOpacity = (1 - dist / this.hoverRadius) * 0.3;
-              const gradient = this.ctx.createRadialGradient(
-                node.x, node.y, 0,
-                node.x, node.y, radius * 4
-              );
-              gradient.addColorStop(0, `rgba(201, 162, 39, ${glowOpacity})`);
-              gradient.addColorStop(1, 'rgba(201, 162, 39, 0)');
-              this.ctx.beginPath();
-              this.ctx.fillStyle = gradient;
-              this.ctx.arc(node.x, node.y, radius * 4, 0, Math.PI * 2);
-              this.ctx.fill();
-            }
-          }
-
-          this.ctx.beginPath();
-          this.ctx.fillStyle = 'rgba(201, 162, 39, 0.8)';
-          this.ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
-          this.ctx.fill();
-        });
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const canvas = document.getElementById('nodesCanvas');
-      if (canvas) {
-        new NodeNetwork(canvas);
-      }
-    });
-
     const translations = {
       'zh-CN': {
         'title': '兑换店即将上线',
@@ -1096,6 +908,127 @@
 
     contractAddressEl.addEventListener('click', copyToClipboard);
     setLanguage(currentLang);
+
+    class NetworkEffect {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.nodes = [];
+        this.lines = [];
+        this.animationId = null;
+        this.resize();
+        this.initNodes();
+        this.animate();
+        window.addEventListener('resize', () => this.resize());
+      }
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      initNodes() {
+        const nodeCount = Math.floor((this.canvas.width * this.canvas.height) / 25000);
+        this.nodes = [];
+        for (let i = 0; i < nodeCount; i++) {
+          this.nodes.push({
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            radius: Math.random() * 2 + 1,
+            alpha: Math.random() * 0.5 + 0.2
+          });
+        }
+      }
+
+      animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.updateNodes();
+        this.drawLines();
+        this.drawNodes();
+        this.animationId = requestAnimationFrame(() => this.animate());
+      }
+
+      updateNodes() {
+        this.nodes.forEach(node => {
+          node.x += node.vx;
+          node.y += node.vy;
+
+          if (node.x < 0 || node.x > this.canvas.width) {
+            node.vx *= -1;
+            node.x = Math.max(0, Math.min(this.canvas.width, node.x));
+          }
+          if (node.y < 0 || node.y > this.canvas.height) {
+            node.vy *= -1;
+            node.y = Math.max(0, Math.min(this.canvas.height, node.y));
+          }
+        });
+      }
+
+      drawLines() {
+        const maxDistance = 120;
+        this.nodes.forEach((node1, i) => {
+          this.nodes.slice(i + 1).forEach(node2 => {
+            const dx = node1.x - node2.x;
+            const dy = node1.y - node2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < maxDistance) {
+              const opacity = (1 - distance / maxDistance) * 0.3;
+              this.ctx.beginPath();
+              this.ctx.strokeStyle = `rgba(201, 162, 39, ${opacity})`;
+              this.ctx.lineWidth = 1;
+              this.ctx.moveTo(node1.x, node1.y);
+              this.ctx.lineTo(node2.x, node2.y);
+              this.ctx.stroke();
+
+              const progress = (Date.now() / 2000) % 1;
+              const waveX = node1.x + (node2.x - node1.x) * progress;
+              const waveY = node1.y + (node2.y - node1.y) * progress;
+              
+              this.ctx.beginPath();
+              this.ctx.arc(waveX, waveY, 2, 0, Math.PI * 2);
+              this.ctx.fillStyle = `rgba(201, 162, 39, ${opacity * 2})`;
+              this.ctx.fill();
+            }
+          });
+        });
+      }
+
+      drawNodes() {
+        this.nodes.forEach(node => {
+          const gradient = this.ctx.createRadialGradient(
+            node.x, node.y, 0,
+            node.x, node.y, node.radius * 3
+          );
+          gradient.addColorStop(0, `rgba(201, 162, 39, ${node.alpha})`);
+          gradient.addColorStop(1, 'rgba(201, 162, 39, 0)');
+
+          this.ctx.beginPath();
+          this.ctx.arc(node.x, node.y, node.radius * 3, 0, Math.PI * 2);
+          this.ctx.fillStyle = gradient;
+          this.ctx.fill();
+
+          this.ctx.beginPath();
+          this.ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+          this.ctx.fillStyle = `rgba(201, 162, 39, ${node.alpha})`;
+          this.ctx.fill();
+        });
+      }
+
+      destroy() {
+        if (this.animationId) {
+          cancelAnimationFrame(this.animationId);
+        }
+        window.removeEventListener('resize', () => this.resize());
+      }
+    }
+
+    const networkCanvas = document.getElementById('networkCanvas');
+    if (networkCanvas) {
+      new NetworkEffect(networkCanvas);
+    }
   </script>
 </body>
 </html>
