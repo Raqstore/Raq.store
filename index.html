@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Raq.Store - Secure & Efficient Cross-Chain Exchange Service Coming Soon">
+  <title>Raq.Store - Exchange Coming Soon</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0A0A0A;
+      --bg-secondary: #111111;
+      --bg-tertiary: #141414;
+      --bg-card: #1A1A1A;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A0A0A0;
+      --text-tertiary: #666666;
+      --accent-primary: #C9A227;
+      --accent-secondary: #E8C547;
+      --accent-glow: rgba(201, 162, 39, 0.15);
+      --border-color: #222222;
+      --border-hover: #333333;
+      --success: #22C55E;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-xxl: 48px;
+      --spacing-xxxl: 80px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 40px rgba(201, 162, 39, 0.1);
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    .bg-effects {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-gradient-1 {
+      position: absolute;
+      top: -30%;
+      left: -20%;
+      width: 70%;
+      height: 70%;
+      background: radial-gradient(ellipse, rgba(201, 162, 39, 0.04) 0%, transparent 70%);
+      animation: float-slow 25s ease-in-out infinite;
+    }
+
+    .bg-gradient-2 {
+      position: absolute;
+      bottom: -20%;
+      right: -15%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(ellipse, rgba(201, 162, 39, 0.03) 0%, transparent 65%);
+      animation: float-slow 20s ease-in-out infinite reverse;
+    }
+
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+
+    .bg-noise {
+      position: absolute;
+      inset: 0;
+      opacity: 0.015;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 128px 128px;
+    }
+
+    @keyframes float-slow {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -20px) rotate(2deg); }
+      66% { transform: translate(-20px, 20px) rotate(-2deg); }
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 32px;
+      background: linear-gradient(180deg, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0) 100%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(201, 162, 39, 0.3));
+      transition: transform var(--transition-normal);
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .brand-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--text-primary);
+    }
+
+    .language-switcher {
+      position: relative;
+    }
+
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .lang-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .lang-arrow {
+      transition: transform var(--transition-fast);
+    }
+
+    .lang-btn.active .lang-arrow {
+      transform: rotate(180deg);
+    }
+
+    .lang-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      min-width: 140px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: all var(--transition-fast);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .lang-dropdown.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .lang-option {
+      display: block;
+      width: 100%;
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .lang-option:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+    }
+
+    .lang-option.active {
+      color: var(--accent-primary);
+      background: var(--accent-glow);
+    }
+
+    .main-content {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 160px 32px 80px;
+      text-align: center;
+    }
+
+    .hero {
+      margin-bottom: 80px;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      font-weight: 300;
+      color: var(--text-secondary);
+      letter-spacing: 0.01em;
+    }
+
+    .countdown-section {
+      margin-bottom: 48px;
+    }
+
+    .launch-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 32px;
+    }
+
+    .launch-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .launch-date-value {
+      font-size: clamp(1.125rem, 2vw, 1.5rem);
+      font-weight: 600;
+      color: var(--accent-primary);
+      letter-spacing: 0.02em;
+    }
+
+    .countdown {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .countdown-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 24px 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      min-width: 90px;
+      transition: all var(--transition-normal);
+    }
+
+    .countdown-item:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .countdown-value {
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      line-height: 1;
+      transition: transform var(--transition-fast);
+    }
+
+    .countdown-value.update {
+      transform: scale(1.05);
+    }
+
+    .countdown-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .countdown-separator {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 300;
+      color: var(--text-tertiary);
+      opacity: 0.5;
+    }
+
+    .contract-section {
+      margin-bottom: 48px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .contract-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition-normal);
+    }
+
+    .contract-info:hover {
+      border-color: var(--border-hover);
+    }
+
+    .contract-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .contract-address-wrapper {
+      position: relative;
+    }
+
+    .contract-address {
+      display: block;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: clamp(0.75rem, 1.5vw, 0.9375rem);
+      color: var(--accent-primary);
+      word-break: break-all;
+      cursor: pointer;
+      padding: 16px;
+      background: rgba(201, 162, 39, 0.05);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+      user-select: all;
+    }
+
+    .contract-address:hover {
+      background: rgba(201, 162, 39, 0.08);
+      border-color: var(--accent-primary);
+    }
+
+    .copy-tooltip {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 8px 16px;
+      background: var(--success);
+      color: var(--bg-primary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-fast);
+      pointer-events: none;
+    }
+
+    .copy-tooltip.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .tech-section {
+      margin-bottom: 32px;
+    }
+
+    .tech-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+
+    .badge-icon {
+      color: var(--accent-primary);
+      font-size: 0.625rem;
+    }
+
+    .footer {
+      position: relative;
+      z-index: 1;
+      padding: 0 32px 32px;
+      text-align: center;
+    }
+
+    .footer-divider {
+      width: 100%;
+      max-width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+      margin: 0 auto 24px;
+    }
+
+    .copyright {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.02em;
+    }
+
+    .fade-in {
+      animation: fadeIn 500ms ease-out forwards;
+    }
+
+    .fade-in-up {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 500ms ease-out forwards;
+    }
+
+    .delay-1 { animation-delay: 0.15s; }
+    .delay-2 { animation-delay: 0.3s; }
+    .delay-3 { animation-delay: 0.45s; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 16px 24px;
+      }
+
+      .logo {
+        width: 32px;
+        height: 32px;
+      }
+
+      .brand-name {
+        font-size: 1.125rem;
+      }
+
+      .main-content {
+        padding: 120px 24px 48px;
+      }
+
+      .hero {
+        margin-bottom: 48px;
+      }
+
+      .countdown {
+        gap: 8px;
+      }
+
+      .countdown-item {
+        padding: 16px 24px;
+        min-width: 70px;
+      }
+
+      .countdown-separator {
+        font-size: 1.25rem;
+      }
+
+      .contract-section {
+        max-width: 100%;
+      }
+
+      .contract-info {
+        padding: 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .countdown {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .countdown-separator {
+        display: none;
+      }
+
+      .countdown-item {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 60px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    [data-i18n] {
+      transition: opacity 150ms;
+    }
+
+    [data-i18n].lang-changing {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-effects">
+    <div class="bg-gradient-1"></div>
+    <div class="bg-gradient-2"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-noise"></div>
+  </div>
+
+  <header class="header fade-in">
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="Raqcoin Logo" class="logo">
+      <span class="brand-name">Raq.Store</span>
+    </div>
+    <div class="language-switcher">
+      <button class="lang-btn" id="langToggle" aria-label="Switch Language">
+        <span id="currentLang">中文</span>
+        <svg class="lang-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="lang-dropdown" id="langDropdown">
+        <button class="lang-option" data-lang="zh-CN">中文</button>
+        <button class="lang-option" data-lang="en">English</button>
+        <button class="lang-option" data-lang="zh-TW">繁體中文</button>
+        <button class="lang-option" data-lang="ja">日本語</button>
+        <button class="lang-option" data-lang="ru">Русский</button>
+        <button class="lang-option" data-lang="fr">Français</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section class="hero fade-in-up">
+      <h1 class="hero-title" data-i18n="title">兑换店即将上线</h1>
+      <p class="hero-subtitle" data-i18n="subtitle">安全、高效的跨链兑换服务</p>
+    </section>
+
+    <section class="countdown-section fade-in-up delay-1">
+      <div class="launch-info">
+        <span class="launch-label" data-i18n="launch_date">预计上线时间</span>
+        <span class="launch-date-value" data-i18n="launch_date_value">2026年6月18日 UTC</span>
+      </div>
+      <div class="countdown" id="countdown">
+        <div class="countdown-item">
+          <span class="countdown-value" id="days">00</span>
+          <span class="countdown-label" data-i18n="days">天</span>
+        </div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <span class="countdown-value" id="hours">00</span>
+          <span class="countdown-label" data-i18n="hours">时</span>
+        </div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <span class="countdown-value" id="minutes">00</span>
+          <span class="countdown-label" data-i18n="minutes">分</span>
+        </div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <span class="countdown-value" id="seconds">00</span>
+          <span class="countdown-label" data-i18n="seconds">秒</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="contract-section fade-in-up delay-2">
+      <div class="contract-info">
+        <span class="contract-label" data-i18n="contract_address">BSC 合约地址</span>
+        <div class="contract-address-wrapper">
+          <code class="contract-address" id="contractAddress" title="Click to copy">0x1AaA6cCF6C8674408F0Ca0843CB5BA02674B10Fd</code>
+          <span class="copy-tooltip" id="copyTooltip" data-i18n="copy_success">已复制</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tech-section fade-in-up delay-3">
+      <div class="tech-badge">
+        <span class="badge-icon">◆</span>
+        <span data-i18n="tech_desc">基于 BNB Chain 的 1:1 跨链兑换</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer fade-in">
+    <div class="footer-divider"></div>
+    <p class="copyright" data-i18n="footer">© 2026 Raq.Store. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const translations = {
+      'zh-CN': {
+        'title': '兑换店即将上线',
+        'subtitle': '安全、高效的跨链兑换服务',
+        'launch_date': '预计上线时间',
+        'launch_date_value': '2026年6月18日 UTC',
+        'contract_address': 'BSC 合约地址',
+        'tech_desc': '基于 BNB Chain 的 1:1 跨链兑换',
+        'copy_success': '已复制',
+        'footer': '© 2026 Raq.Store. All rights reserved.',
+        'days': '天',
+        'hours': '时',
+        'minutes': '分',
+        'seconds': '秒'
+      },
+      'en': {
+        'title': 'Exchange Coming Soon',
+        'subtitle': 'Secure & Efficient Cross-Chain Exchange Service',
+        'launch_date': 'Expected Launch Date',
+        'launch_date_value': 'June 18, 2026 UTC',
+        'contract_address': 'BSC Contract Address',
+        'tech_desc': '1:1 Cross-Chain Exchange on BNB Chain',
+        'copy_success': 'Copied',
+        'footer': '© 2026 Raq.Store. All rights reserved.',
+        'days': 'DAYS',
+        'hours': 'HRS',
+        'minutes': 'MIN',
+        'seconds': 'SEC'
+      },
+      'zh-TW': {
+        'title': '兌換店即將上線',
+        'subtitle': '安全、高效的跨鏈兌換服務',
+        'launch_date': '預計上線時間',
+        'launch_date_value': '2026年6月18日 UTC',
+        'contract_address': 'BSC 合約地址',
+        'tech_desc': '基於 BNB Chain 的 1:1 跨鏈兌換',
+        'copy_success': '已複製',
+        'footer': '© 2026 Raq.Store. All rights reserved.',
+        'days': '天',
+        'hours': '時',
+        'minutes': '分',
+        'seconds': '秒'
+      },
+      'ja': {
+        'title': '交換所近日公開',
+        'subtitle': '安全で効率的なクロスチェーン交換サービス',
+        'launch_date': '公開予定日',
+        'launch_date_value': '2026年6月18日 UTC',
+        'contract_address': 'BSC コントラクトアドレス',
+        'tech_desc': 'BNB Chain 上で 1:1 クロスチェーン交換',
+        'copy_success': 'コピーしました',
+        'footer': '© 2026 Raq.Store. All rights reserved.',
+        'days': '日',
+        'hours': '時',
+        'minutes': '分',
+        'seconds': '秒'
+      },
+      'ru': {
+        'title': 'Магазин скоро откроется',
+        'subtitle': 'Безопасный и эффективный кросс-чейн обмен',
+        'launch_date': 'Ожидаемая дата запуска',
+        'launch_date_value': '18 июня 2026 г. UTC',
+        'contract_address': 'Адрес контракта BSC',
+        'tech_desc': 'Кросс-чейн обмен 1:1 на BNB Chain',
+        'copy_success': 'Скопировано',
+        'footer': '© 2026 Raq.Store. All rights reserved.',
+        'days': 'ДНЕЙ',
+        'hours': 'ЧАС',
+        'minutes': 'МИН',
+        'seconds': 'СЕК'
+      },
+      'fr': {
+        'title': 'Boutique Bientôt Disponible',
+        'subtitle': "Service d'échange cross-chain sécurisé et efficace",
+        'launch_date': 'Date de lancement prévue',
+        'launch_date_value': '18 juin 2026 UTC',
+        'contract_address': 'Adresse du contrat BSC',
+        'tech_desc': 'Échange cross-chain 1:1 sur BNB Chain',
+        'copy_success': 'Copié',
+        'footer': '© 2026 Raq.Store. All rights reserved.',
+        'days': 'JOURS',
+        'hours': 'HEU',
+        'minutes': 'MIN',
+        'seconds': 'SEC'
+      }
+    };
+
+    const languageNames = {
+      'zh-CN': '中文',
+      'en': 'English',
+      'zh-TW': '繁體中文',
+      'ja': '日本語',
+      'ru': 'Русский',
+      'fr': 'Français'
+    };
+
+    const TARGET_DATE = new Date('2026-06-18T00:00:00Z');
+    const CONTRACT_ADDRESS = '0x1AaA6cCF6C8674408F0Ca0843CB5BA02674B10Fd';
+
+    let currentLang = localStorage.getItem('raq-lang') || 'zh-CN';
+
+    const langToggle = document.getElementById('langToggle');
+    const langDropdown = document.getElementById('langDropdown');
+    const currentLangSpan = document.getElementById('currentLang');
+    const countdownDays = document.getElementById('days');
+    const countdownHours = document.getElementById('hours');
+    const countdownMinutes = document.getElementById('minutes');
+    const countdownSeconds = document.getElementById('seconds');
+    const contractAddressEl = document.getElementById('contractAddress');
+    const copyTooltip = document.getElementById('copyTooltip');
+
+    function setLanguage(lang) {
+      if (!translations[lang]) return;
+      currentLang = lang;
+      localStorage.setItem('raq-lang', lang);
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+          el.classList.add('lang-changing');
+          setTimeout(() => {
+            el.textContent = translations[lang][key];
+            el.classList.remove('lang-changing');
+          }, 150);
+        }
+      });
+      currentLangSpan.textContent = languageNames[lang];
+      document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.lang === lang);
+      });
+    }
+
+    function toggleDropdown() {
+      langDropdown.classList.toggle('show');
+      langToggle.classList.toggle('active');
+    }
+
+    function closeDropdown() {
+      langDropdown.classList.remove('show');
+      langToggle.classList.remove('active');
+    }
+
+    langToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown();
+    });
+
+    document.querySelectorAll('.lang-option').forEach(option => {
+      option.addEventListener('click', () => {
+        setLanguage(option.dataset.lang);
+        closeDropdown();
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!langToggle.contains(e.target) && !langDropdown.contains(e.target)) {
+        closeDropdown();
+      }
+    });
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = TARGET_DATE - now;
+      if (diff <= 0) {
+        countdownDays.textContent = '00';
+        countdownHours.textContent = '00';
+        countdownMinutes.textContent = '00';
+        countdownSeconds.textContent = '00';
+        return;
+      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      const newDays = String(days).padStart(2, '0');
+      const newHours = String(hours).padStart(2, '0');
+      const newMinutes = String(minutes).padStart(2, '0');
+      const newSeconds = String(seconds).padStart(2, '0');
+      if (countdownDays.textContent !== newDays) {
+        countdownDays.textContent = newDays;
+        countdownDays.classList.add('update');
+        setTimeout(() => countdownDays.classList.remove('update'), 150);
+      }
+      if (countdownHours.textContent !== newHours) {
+        countdownHours.textContent = newHours;
+        countdownHours.classList.add('update');
+        setTimeout(() => countdownHours.classList.remove('update'), 150);
+      }
+      if (countdownMinutes.textContent !== newMinutes) {
+        countdownMinutes.textContent = newMinutes;
+        countdownMinutes.classList.add('update');
+        setTimeout(() => countdownMinutes.classList.remove('update'), 150);
+      }
+      if (countdownSeconds.textContent !== newSeconds) {
+        countdownSeconds.textContent = newSeconds;
+        countdownSeconds.classList.add('update');
+        setTimeout(() => countdownSeconds.classList.remove('update'), 150);
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    function copyToClipboard() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(CONTRACT_ADDRESS).then(() => {
+          showCopySuccess();
+        }).catch(() => {
+          fallbackCopy();
+        });
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    function fallbackCopy() {
+      const textarea = document.createElement('textarea');
+      textarea.value = CONTRACT_ADDRESS;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showCopySuccess();
+      } catch (err) {
+        console.error('Copy failed:', err);
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function showCopySuccess() {
+      copyTooltip.classList.add('show');
+      setTimeout(() => {
+        copyTooltip.classList.remove('show');
+      }, 2000);
+    }
+
+    contractAddressEl.addEventListener('click', copyToClipboard);
+    setLanguage(currentLang);
+  </script>
+</body>
+</html>
