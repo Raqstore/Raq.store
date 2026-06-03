@@ -478,8 +478,11 @@
       left: 50%;
       transform: translate(-50%, -50%);
       padding: 8px 16px;
-      background: var(--success);
-      color: var(--bg-primary);
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: var(--text-primary);
       font-size: 0.75rem;
       font-weight: 600;
       border-radius: var(--radius-sm);
@@ -487,6 +490,7 @@
       visibility: hidden;
       transition: all var(--transition-fast);
       pointer-events: none;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
     .copy-tooltip.show {
@@ -496,6 +500,11 @@
 
     .tech-section {
       margin-bottom: 48px;
+    }
+
+    .tech-badge-link {
+      display: inline-flex;
+      text-decoration: none;
     }
 
     .tech-badge {
@@ -509,6 +518,13 @@
       font-size: 0.875rem;
       font-weight: 400;
       color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .tech-badge:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
     }
 
     .badge-icon {
@@ -947,10 +963,12 @@
     </section>
 
     <section class="tech-section fade-in-up delay-5">
-      <div class="tech-badge">
-        <span class="badge-icon">◆</span>
-        <span data-i18n="tech_desc">基于 BNB Chain 的 1:1 跨链兑换</span>
-      </div>
+      <a href="https://bscscan.com/address/0x1AaA6cCF6C8674408F0Ca0843CB5BA02674B10Fd" target="_blank" rel="noopener noreferrer" class="tech-badge-link">
+        <div class="tech-badge">
+          <span class="badge-icon">◆</span>
+          <span data-i18n="tech_desc">基于 BNB Chain 的 1:1 跨链兑换</span>
+        </div>
+      </a>
     </section>
   </main>
 
