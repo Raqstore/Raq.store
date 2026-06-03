@@ -981,8 +981,10 @@
     const translations = {
       'zh-CN': {
         'title': '兑换店即将上线',
+        'title_launched': 'Raq.store',
         'subtitle': '安全、高效的跨链兑换服务',
         'launch_date': '预计上线时间',
+        'launch_date_launched': '上线时间',
         'launch_date_value': '2026年6月18日 UTC',
         'contract_address': 'BSC 合约地址',
         'tech_desc': '基于 BNB Chain 的 1:1 跨链兑换',
@@ -1004,8 +1006,10 @@
       },
       'en': {
         'title': 'Exchange Coming Soon',
+        'title_launched': 'Raq.store',
         'subtitle': 'Secure & Efficient Cross-Chain Exchange Service',
         'launch_date': 'Expected Launch Date',
+        'launch_date_launched': 'Launch Date',
         'launch_date_value': 'June 18, 2026 UTC',
         'contract_address': 'BSC Contract Address',
         'tech_desc': '1:1 Cross-Chain Exchange on BNB Chain',
@@ -1027,8 +1031,10 @@
       },
       'zh-TW': {
         'title': '兌換店即將上線',
+        'title_launched': 'Raq.store',
         'subtitle': '安全、高效的跨鏈兌換服務',
         'launch_date': '預計上線時間',
+        'launch_date_launched': '上線時間',
         'launch_date_value': '2026年6月18日 UTC',
         'contract_address': 'BSC 合約地址',
         'tech_desc': '基於 BNB Chain 的 1:1 跨鏈兌換',
@@ -1050,8 +1056,10 @@
       },
       'ja': {
         'title': '交換所近日公開',
+        'title_launched': 'Raq.store',
         'subtitle': '安全で効率的なクロスチェーン交換サービス',
         'launch_date': '公開予定日',
+        'launch_date_launched': '公開日',
         'launch_date_value': '2026年6月18日 UTC',
         'contract_address': 'BSC コントラクトアドレス',
         'tech_desc': 'BNB Chain 上で 1:1 クロスチェーン交換',
@@ -1073,8 +1081,10 @@
       },
       'ru': {
         'title': 'Магазин скоро откроется',
+        'title_launched': 'Raq.store',
         'subtitle': 'Безопасный и эффективный кросс-чейн обмен',
         'launch_date': 'Ожидаемая дата запуска',
+        'launch_date_launched': 'Дата запуска',
         'launch_date_value': '18 июня 2026 г. UTC',
         'contract_address': 'Адрес контракта BSC',
         'tech_desc': 'Кросс-чейн обмен 1:1 на BNB Chain',
@@ -1096,8 +1106,10 @@
       },
       'fr': {
         'title': 'Boutique Bientôt Disponible',
+        'title_launched': 'Raq.store',
         'subtitle': "Service d'échange cross-chain sécurisé et efficace",
         'launch_date': 'Date de lancement prévue',
+        'launch_date_launched': 'Date de lancement',
         'launch_date_value': '18 juin 2026 UTC',
         'contract_address': 'Adresse du contrat BSC',
         'tech_desc': 'Échange cross-chain 1:1 sur BNB Chain',
@@ -1119,8 +1131,10 @@
       },
       'ar': {
         'title': 'المتجر قريباً',
+        'title_launched': 'Raq.store',
         'subtitle': 'خدمة صرف عبر السلاسل الآمنة والعالية الأداء',
         'launch_date': 'موعد الإطلاق',
+        'launch_date_launched': 'تاريخ الإطلاق',
         'launch_date_value': '18 يونيو 2026 UTC',
         'contract_address': 'عنوان عقد BSC',
         'tech_desc': 'صرف عبر السلاسل 1:1 على BNB Chain',
@@ -1142,8 +1156,10 @@
       },
       'es': {
         'title': 'Tienda Pronto Disponible',
+        'title_launched': 'Raq.store',
         'subtitle': 'Servicio de intercambio cross-chain seguro y eficiente',
         'launch_date': 'Fecha de lanzamiento esperada',
+        'launch_date_launched': 'Fecha de lanzamiento',
         'launch_date_value': '18 de junio de 2026 UTC',
         'contract_address': 'Dirección del contrato BSC',
         'tech_desc': 'Intercambio cross-chain 1:1 en BNB Chain',
@@ -1283,6 +1299,16 @@
       if (diff <= 0) {
         document.getElementById('countdown').style.display = 'none';
         document.getElementById('launchedState').style.display = 'flex';
+        
+        const heroTitle = document.querySelector('.hero-title');
+        const launchLabel = document.querySelector('.launch-label');
+        
+        if (heroTitle && translations[currentLang]['title_launched']) {
+          heroTitle.textContent = translations[currentLang]['title_launched'];
+        }
+        if (launchLabel && translations[currentLang]['launch_date_launched']) {
+          launchLabel.textContent = translations[currentLang]['launch_date_launched'];
+        }
         return;
       }
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
