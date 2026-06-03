@@ -791,6 +791,45 @@
     [data-i18n].lang-changing {
       opacity: 0;
     }
+
+    html[lang="ar"] .main-content {
+      direction: rtl;
+      text-align: right;
+    }
+
+    html[lang="ar"] .hero-title {
+      letter-spacing: normal;
+    }
+
+    html[lang="ar"] .countdown {
+      flex-direction: row-reverse;
+    }
+
+    html[lang="ar"] .countdown-separator {
+      transform: scaleX(-1);
+    }
+
+    html[lang="ar"] .timeline-countdown {
+      flex-direction: row-reverse;
+    }
+
+    html[lang="ar"] .about-title {
+      flex-direction: row-reverse;
+    }
+
+    html[lang="ar"] .about-title::before {
+      order: 2;
+      margin-left: 0;
+      margin-right: 12px;
+    }
+
+    html[lang="ar"] .tech-badge {
+      flex-direction: row-reverse;
+    }
+
+    html[lang="ar"] .launch-info {
+      align-items: flex-end;
+    }
   </style>
 </head>
 <body>
@@ -815,12 +854,14 @@
         </svg>
       </button>
       <div class="lang-dropdown" id="langDropdown">
-        <button class="lang-option" data-lang="zh-CN">中文</button>
         <button class="lang-option" data-lang="en">English</button>
-        <button class="lang-option" data-lang="zh-TW">繁體中文</button>
+        <button class="lang-option" data-lang="es">Español</button>
+        <button class="lang-option" data-lang="fr">Français</button>
         <button class="lang-option" data-lang="ja">日本語</button>
         <button class="lang-option" data-lang="ru">Русский</button>
-        <button class="lang-option" data-lang="fr">Français</button>
+        <button class="lang-option" data-lang="ar">العربية</button>
+        <button class="lang-option" data-lang="zh-CN">中文</button>
+        <button class="lang-option" data-lang="zh-TW">繁體中文</button>
       </div>
     </div>
   </header>
@@ -1057,6 +1098,52 @@
         'timeline_hours': 'H',
         'launched': 'Lancé',
         'enter_store': 'Accéder à la boutique'
+      },
+      'ar': {
+        'title': 'المتجر قريباً',
+        'subtitle': 'خدمة صرف عبر السلاسل الآمنة والعالية الأداء',
+        'launch_date': 'موعد الإطلاق',
+        'launch_date_value': '18 يونيو 2026 UTC',
+        'contract_address': 'عنوان عقد BSC',
+        'tech_desc': 'صرف عبر السلاسل 1:1 على BNB Chain',
+        'copy_success': 'تم النسخ!',
+        'footer': '© 2026 Raq.Store. جميع الحقوق محفوظة.',
+        'days': 'أيام',
+        'hours': 'ساعات',
+        'minutes': 'دقائق',
+        'seconds': 'ثواني',
+        'about_title': 'عن Raqcoin',
+        'about_text': 'Raqcoin هي السلسلة العامة الوحيدة في العالم التي تستخدم خوارزمية POW مقاومة للكمبيوتر الكمومي، مع استخدام خوارزميات تشفير مقاومة للكمبيوتر الكمومي المبتكرة (المعادلات التربيعية متعددة المتغيرات). منذ إطلاقها في 18 يونيو 2018 UTC، تعمل آمنًا لسنوات عديدة. بنيت على تقنية ABCMint الأساسية، توفر Raqcoin أساسيات تجارة الأصول الرقمية اللامركزية الآمنة والموثوقة. مفتوح المصدر ومتوفر على <a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a>.',
+        'timeline_label': 'العمل الآمن منذ',
+        'timeline_years': 'سنوات',
+        'timeline_months': 'أشهر',
+        'timeline_days': 'أيام',
+        'timeline_hours': 'ساعات',
+        'launched': 'تم الإطلاق',
+        'enter_store': 'الدخول إلى المتجر'
+      },
+      'es': {
+        'title': 'Tienda Pronto Disponible',
+        'subtitle': 'Servicio de intercambio cross-chain seguro y eficiente',
+        'launch_date': 'Fecha de lanzamiento esperada',
+        'launch_date_value': '18 de junio de 2026 UTC',
+        'contract_address': 'Dirección del contrato BSC',
+        'tech_desc': 'Intercambio cross-chain 1:1 en BNB Chain',
+        'copy_success': '¡Copiado!',
+        'footer': '© 2026 Raq.Store. Todos los derechos reservados.',
+        'days': 'DÍAS',
+        'hours': 'HRS',
+        'minutes': 'MIN',
+        'seconds': 'SEG',
+        'about_title': 'Acerca de Raqcoin',
+        'about_text': 'Raqcoin es la única blockchain POW resistente a cuántica del mundo, utilizando algoritmos criptográficos post-cuánticos innovadores (Polinomios Cuadráticos Multivariados). Lanzada el 18 de junio de 2018 UTC, ha estado funcionando de forma segura durante muchos años. Construida sobre la tecnología ABCMint, Raqcoin proporciona una infraestructura descentralizada, segura y confiable para el comercio de activos digitales. El código fuente es open source y está disponible en <a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a>.',
+        'timeline_label': 'Funcionando desde',
+        'timeline_years': 'AÑOS',
+        'timeline_months': 'MES',
+        'timeline_days': 'DÍAS',
+        'timeline_hours': 'H',
+        'launched': 'Lanzado',
+        'enter_store': 'Entrar a la tienda'
       }
     };
 
@@ -1066,7 +1153,9 @@
       'zh-TW': '繁體中文',
       'ja': '日本語',
       'ru': 'Русский',
-      'fr': 'Français'
+      'fr': 'Français',
+      'ar': 'العربية',
+      'es': 'Español'
     };
 
     const TARGET_DATE = new Date('2026-06-18T00:00:00Z');
@@ -1089,7 +1178,13 @@
         'fr-FR': 'fr',
         'en': 'en',
         'en-US': 'en',
-        'en-GB': 'en'
+        'en-GB': 'en',
+        'ar': 'ar',
+        'ar-SA': 'ar',
+        'ar-EG': 'ar',
+        'es': 'es',
+        'es-ES': 'es',
+        'es-MX': 'es'
       };
       return langMap[systemLang] || 'en';
     }
