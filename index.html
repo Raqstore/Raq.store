@@ -809,14 +809,6 @@
             <span class="timeline-value" id="timelineHours">00</span>
             <span class="timeline-label-text" data-i18n="timeline_hours">时</span>
           </div>
-          <div class="timeline-item">
-            <span class="timeline-value" id="timelineMinutes">00</span>
-            <span class="timeline-label-text" data-i18n="timeline_minutes">分</span>
-          </div>
-          <div class="timeline-item">
-            <span class="timeline-value" id="timelineSeconds">00</span>
-            <span class="timeline-label-text" data-i18n="timeline_seconds">秒</span>
-          </div>
         </div>
       </div>
     </section>
@@ -855,9 +847,7 @@
         'timeline_years': '年',
         'timeline_months': '月',
         'timeline_days': '天',
-        'timeline_hours': '时',
-        'timeline_minutes': '分',
-        'timeline_seconds': '秒'
+        'timeline_hours': '时'
       },
       'en': {
         'title': 'Exchange Coming Soon',
@@ -878,9 +868,7 @@
         'timeline_years': 'YRS',
         'timeline_months': 'MON',
         'timeline_days': 'DAY',
-        'timeline_hours': 'HR',
-        'timeline_minutes': 'MIN',
-        'timeline_seconds': 'SEC'
+        'timeline_hours': 'HR'
       },
       'zh-TW': {
         'title': '兌換店即將上線',
@@ -901,9 +889,7 @@
         'timeline_years': '年',
         'timeline_months': '月',
         'timeline_days': '天',
-        'timeline_hours': '時',
-        'timeline_minutes': '分',
-        'timeline_seconds': '秒'
+        'timeline_hours': '時'
       },
       'ja': {
         'title': '交換所近日公開',
@@ -924,9 +910,7 @@
         'timeline_years': '年',
         'timeline_months': '月',
         'timeline_days': '日',
-        'timeline_hours': '時',
-        'timeline_minutes': '分',
-        'timeline_seconds': '秒'
+        'timeline_hours': '時'
       },
       'ru': {
         'title': 'Магазин скоро откроется',
@@ -947,9 +931,7 @@
         'timeline_years': 'ЛЕТ',
         'timeline_months': 'МЕС',
         'timeline_days': 'ДН',
-        'timeline_hours': 'Ч',
-        'timeline_minutes': 'МИН',
-        'timeline_seconds': 'СЕК'
+        'timeline_hours': 'Ч'
       },
       'fr': {
         'title': 'Boutique Bientôt Disponible',
@@ -970,9 +952,7 @@
         'timeline_years': 'ANS',
         'timeline_months': 'MOIS',
         'timeline_days': 'JRS',
-        'timeline_hours': 'H',
-        'timeline_minutes': 'MIN',
-        'timeline_seconds': 'SEC'
+        'timeline_hours': 'H'
       }
     };
 
@@ -1026,8 +1006,6 @@
     const timelineMonths = document.getElementById('timelineMonths');
     const timelineDays = document.getElementById('timelineDays');
     const timelineHours = document.getElementById('timelineHours');
-    const timelineMinutes = document.getElementById('timelineMinutes');
-    const timelineSeconds = document.getElementById('timelineSeconds');
 
     function setLanguage(lang) {
       if (!translations[lang]) return;
@@ -1133,8 +1111,6 @@
         timelineMonths.textContent = '00';
         timelineDays.textContent = '00';
         timelineHours.textContent = '00';
-        timelineMinutes.textContent = '00';
-        timelineSeconds.textContent = '00';
         return;
       }
       const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -1143,15 +1119,11 @@
       const months = Math.floor(remainingDays / 30);
       const days = remainingDays % 30;
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
       const newYears = String(years).padStart(2, '0');
       const newMonths = String(months).padStart(2, '0');
       const newDays = String(days).padStart(2, '0');
       const newHours = String(hours).padStart(2, '0');
-      const newMinutes = String(minutes).padStart(2, '0');
-      const newSeconds = String(seconds).padStart(2, '0');
 
       if (timelineYears.textContent !== newYears) {
         timelineYears.textContent = newYears;
@@ -1165,15 +1137,9 @@
       if (timelineHours.textContent !== newHours) {
         timelineHours.textContent = newHours;
       }
-      if (timelineMinutes.textContent !== newMinutes) {
-        timelineMinutes.textContent = newMinutes;
-      }
-      if (timelineSeconds.textContent !== newSeconds) {
-        timelineSeconds.textContent = newSeconds;
-      }
     }
 
-    setInterval(updateTimeline, 1000);
+    setInterval(updateTimeline, 3600000);
     updateTimeline();
 
     function copyToClipboard() {
