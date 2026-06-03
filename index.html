@@ -353,6 +353,72 @@
       opacity: 0.5;
     }
 
+    .launched-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      margin-top: 32px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .launched-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #22c55e;
+    }
+
+    .launched-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: #22c55e;
+      border-radius: 50%;
+      color: white;
+      font-size: 0.75rem;
+    }
+
+    .launch-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 48px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--bg-primary);
+      text-decoration: none;
+      transition: all var(--transition-normal);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .launch-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(201, 162, 39, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .contract-section {
       margin-bottom: 48px;
       width: 100%;
@@ -791,6 +857,13 @@
           <span class="countdown-label" data-i18n="seconds">秒</span>
         </div>
       </div>
+      <div class="launched-state" id="launchedState" style="display: none;">
+        <div class="launched-badge">
+          <span class="launched-icon">✓</span>
+          <span class="launched-text" data-i18n="launched">已上线</span>
+        </div>
+        <a href="https://exchange.raq.store" class="launch-button" data-i18n="enter_store">进入兑换店</a>
+      </div>
     </section>
 
     <section class="contract-section fade-in-up delay-2">
@@ -866,7 +939,9 @@
         'timeline_years': '年',
         'timeline_months': '月',
         'timeline_days': '天',
-        'timeline_hours': '时'
+        'timeline_hours': '时',
+        'launched': '已上线',
+        'enter_store': '进入兑换店'
       },
       'en': {
         'title': 'Exchange Coming Soon',
@@ -887,7 +962,9 @@
         'timeline_years': 'YRS',
         'timeline_months': 'MON',
         'timeline_days': 'DAY',
-        'timeline_hours': 'HR'
+        'timeline_hours': 'HR',
+        'launched': 'Launched',
+        'enter_store': 'Enter Exchange'
       },
       'zh-TW': {
         'title': '兌換店即將上線',
@@ -908,7 +985,9 @@
         'timeline_years': '年',
         'timeline_months': '月',
         'timeline_days': '天',
-        'timeline_hours': '時'
+        'timeline_hours': '時',
+        'launched': '已上線',
+        'enter_store': '進入兌換店'
       },
       'ja': {
         'title': '交換所近日公開',
@@ -929,7 +1008,9 @@
         'timeline_years': '年',
         'timeline_months': '月',
         'timeline_days': '日',
-        'timeline_hours': '時'
+        'timeline_hours': '時',
+        'launched': '公開済み',
+        'enter_store': '交換所に入る'
       },
       'ru': {
         'title': 'Магазин скоро откроется',
@@ -950,7 +1031,9 @@
         'timeline_years': 'ЛЕТ',
         'timeline_months': 'МЕС',
         'timeline_days': 'ДН',
-        'timeline_hours': 'Ч'
+        'timeline_hours': 'Ч',
+        'launched': 'Запущено',
+        'enter_store': 'Перейти в магазин'
       },
       'fr': {
         'title': 'Boutique Bientôt Disponible',
@@ -971,7 +1054,9 @@
         'timeline_years': 'ANS',
         'timeline_months': 'MOIS',
         'timeline_days': 'JRS',
-        'timeline_hours': 'H'
+        'timeline_hours': 'H',
+        'launched': 'Lancé',
+        'enter_store': 'Accéder à la boutique'
       }
     };
 
@@ -1083,10 +1168,8 @@
       const now = new Date();
       const diff = TARGET_DATE - now;
       if (diff <= 0) {
-        countdownDays.textContent = '00';
-        countdownHours.textContent = '00';
-        countdownMinutes.textContent = '00';
-        countdownSeconds.textContent = '00';
+        document.getElementById('countdown').style.display = 'none';
+        document.getElementById('launchedState').style.display = 'flex';
         return;
       }
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
