@@ -506,12 +506,10 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      padding: 24px;
+      padding: 32px;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
-      box-sizing: border-box;
-      width: 100%;
     }
 
     .timeline-label {
@@ -526,22 +524,18 @@
     .timeline-countdown {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 16px;
     }
 
     .timeline-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 20px 24px;
-      background: var(--bg-card);
+      padding: 16px 24px;
+      background: rgba(201, 162, 39, 0.05);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-md);
       min-width: 70px;
-      box-sizing: border-box;
-      transition: all var(--transition-normal);
     }
 
     .timeline-value {
@@ -678,19 +672,6 @@
 
       .contract-info {
         padding: 24px;
-      }
-
-      .timeline-info {
-        padding: 16px;
-      }
-
-      .timeline-item {
-        padding: 12px 16px;
-        min-width: 60px;
-      }
-
-      .timeline-value {
-        font-size: 1.25rem;
       }
     }
 
