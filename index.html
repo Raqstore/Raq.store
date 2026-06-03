@@ -12,6 +12,8 @@
     const IS_LAUNCHED = NOW >= TARGET_LAUNCH;
     const LAUNCHED_TITLE = 'Raq.store';
     const LAUNCHING_TITLE = '兑换店即将上线';
+    const LAUNCHED_PAGE_TITLE = 'Raq.store';
+    const LAUNCHING_PAGE_TITLE = 'Raq.Store - Exchange Coming Soon';
     const LAUNCHED_LABEL = '上线时间';
     const LAUNCHING_LABEL = '预计上线时间';
     
@@ -21,9 +23,11 @@
       if (IS_LAUNCHED) {
         if (heroTitle) heroTitle.textContent = LAUNCHED_TITLE;
         if (launchLabel) launchLabel.textContent = LAUNCHED_LABEL;
+        document.title = LAUNCHED_PAGE_TITLE;
       } else {
         if (heroTitle) heroTitle.textContent = LAUNCHING_TITLE;
         if (launchLabel) launchLabel.textContent = LAUNCHING_LABEL;
+        document.title = LAUNCHING_PAGE_TITLE;
       }
       document.querySelectorAll('.hero-title, .launch-label').forEach(el => {
         el.classList.remove('launch-hidden');
@@ -1344,6 +1348,7 @@
         if (launchLabel && translations[currentLang]['launch_date_launched']) {
           launchLabel.textContent = translations[currentLang]['launch_date_launched'];
         }
+        document.title = 'Raq.store';
         return;
       }
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
