@@ -429,7 +429,7 @@
     }
 
     .tech-section {
-      margin-bottom: 32px;
+      margin-bottom: 48px;
     }
 
     .tech-badge {
@@ -447,6 +447,136 @@
 
     .badge-icon {
       color: var(--accent-primary);
+    }
+
+    .about-section {
+      margin-bottom: 48px;
+      width: 100%;
+      max-width: 800px;
+      padding: 40px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      text-align: left;
+    }
+
+    .about-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent-primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .about-title::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: 2px;
+    }
+
+    .about-text {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .about-text a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .about-text a:hover {
+      color: var(--accent-secondary);
+      text-decoration: underline;
+    }
+
+    .timeline-section {
+      margin-bottom: 48px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .timeline-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+    }
+
+    .timeline-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: center;
+    }
+
+    .timeline-countdown {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .timeline-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 24px;
+      background: rgba(201, 162, 39, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      min-width: 70px;
+    }
+
+    .timeline-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    .timeline-label-text {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all var(--transition-fast);
+    }
+
+    .github-link:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .github-icon {
+      font-size: 1rem;
+    }
       font-size: 0.625rem;
     }
 
@@ -654,7 +784,44 @@
       </div>
     </section>
 
-    <section class="tech-section fade-in-up delay-3">
+    <section class="about-section fade-in-up delay-3">
+      <h2 class="about-title" data-i18n="about_title">关于 Raqcoin</h2>
+      <p class="about-text" data-i18n="about_text">Raqcoin 是全世界唯一的抗量子 POW 公链，采用创新的抗量子密码算法（Multivariate Quadratic Polynomials），自 2018 年 6 月 18 日 UTC 启动以来已安全运行超过 8 年。基于 ABCMint 核心技术构建，Raqcoin 提供去中心化、安全可靠的数字资产交易基础设施。项目源码已开源，您可以在 <a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a> 上查看完整代码。</p>
+    </section>
+
+    <section class="timeline-section fade-in-up delay-4">
+      <div class="timeline-info">
+        <span class="timeline-label" data-i18n="timeline_label">已安全运行</span>
+        <div class="timeline-countdown" id="timelineCountdown">
+          <div class="timeline-item">
+            <span class="timeline-value" id="timelineYears">00</span>
+            <span class="timeline-label-text" data-i18n="timeline_years">年</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-value" id="timelineMonths">00</span>
+            <span class="timeline-label-text" data-i18n="timeline_months">月</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-value" id="timelineDays">00</span>
+            <span class="timeline-label-text" data-i18n="timeline_days">天</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-value" id="timelineHours">00</span>
+            <span class="timeline-label-text" data-i18n="timeline_hours">时</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-value" id="timelineMinutes">00</span>
+            <span class="timeline-label-text" data-i18n="timeline_minutes">分</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-value" id="timelineSeconds">00</span>
+            <span class="timeline-label-text" data-i18n="timeline_seconds">秒</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tech-section fade-in-up delay-5">
       <div class="tech-badge">
         <span class="badge-icon">◆</span>
         <span data-i18n="tech_desc">基于 BNB Chain 的 1:1 跨链兑换</span>
@@ -681,7 +848,16 @@
         'days': '天',
         'hours': '时',
         'minutes': '分',
-        'seconds': '秒'
+        'seconds': '秒',
+        'about_title': '关于 Raqcoin',
+        'about_text': 'Raqcoin 是全世界唯一的抗量子 POW 公链，采用创新的抗量子密码算法（Multivariate Quadratic Polynomials），自 2018 年 6 月 18 日 UTC 启动以来已安全运行多年。基于 ABCMint 核心技术构建，Raqcoin 提供去中心化、安全可靠的数字资产交易基础设施。项目源码已开源，您可以在 <a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a> 上查看完整代码。',
+        'timeline_label': '已安全运行',
+        'timeline_years': '年',
+        'timeline_months': '月',
+        'timeline_days': '天',
+        'timeline_hours': '时',
+        'timeline_minutes': '分',
+        'timeline_seconds': '秒'
       },
       'en': {
         'title': 'Exchange Coming Soon',
@@ -695,7 +871,16 @@
         'days': 'DAYS',
         'hours': 'HRS',
         'minutes': 'MIN',
-        'seconds': 'SEC'
+        'seconds': 'SEC',
+        'about_title': 'About Raqcoin',
+        'about_text': 'Raqcoin is the world\'s only quantum-resistant POW blockchain, utilizing innovative post-quantum cryptography (Multivariate Quadratic Polynomials). Launched on June 18, 2018 UTC, it has been running securely for many years. Built on ABCMint core technology, Raqcoin provides decentralized, secure, and reliable digital asset trading infrastructure. The source code is open source and available on <a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a>.',
+        'timeline_label': 'Securely Running Since',
+        'timeline_years': 'YRS',
+        'timeline_months': 'MON',
+        'timeline_days': 'DAY',
+        'timeline_hours': 'HR',
+        'timeline_minutes': 'MIN',
+        'timeline_seconds': 'SEC'
       },
       'zh-TW': {
         'title': '兌換店即將上線',
@@ -709,7 +894,16 @@
         'days': '天',
         'hours': '時',
         'minutes': '分',
-        'seconds': '秒'
+        'seconds': '秒',
+        'about_title': '關於 Raqcoin',
+        'about_text': 'Raqcoin 是全世界唯一的抗量子 POW 公鏈，採用創新的抗量子密碼演算法（Multivariate Quadratic Polynomials），自 2018 年 6 月 18 日 UTC 啟動以來已安全執行多年。基於 ABCMint 核心技術建構，Raqcoin 提供去中心化、安全可靠的數位資產交易基礎設施。專案原始碼已開源，您可以在 <a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a> 上查看完整程式碼。',
+        'timeline_label': '已安全執行',
+        'timeline_years': '年',
+        'timeline_months': '月',
+        'timeline_days': '天',
+        'timeline_hours': '時',
+        'timeline_minutes': '分',
+        'timeline_seconds': '秒'
       },
       'ja': {
         'title': '交換所近日公開',
@@ -723,7 +917,16 @@
         'days': '日',
         'hours': '時',
         'minutes': '分',
-        'seconds': '秒'
+        'seconds': '秒',
+        'about_title': 'Raqcoin について',
+        'about_text': 'Raqcoin は世界で唯一の量子耐性 POW ブロックチェーンで、革新的な後量子暗号（多変量二次多項式）を採用しています。2018年6月18日 UTC にローンチされて以来、長年安全に運行されています。ABCMint コアテクノロジーに基づいて構築された Raqcoin は、分散型で安全かつ信頼性の高いデジタル資産取引インフラストラクチャを提供します。ソースコードはオープンソースで、<a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a> で確認できます。',
+        'timeline_label': '安全稼働中',
+        'timeline_years': '年',
+        'timeline_months': '月',
+        'timeline_days': '日',
+        'timeline_hours': '時',
+        'timeline_minutes': '分',
+        'timeline_seconds': '秒'
       },
       'ru': {
         'title': 'Магазин скоро откроется',
@@ -737,7 +940,16 @@
         'days': 'ДНЕЙ',
         'hours': 'ЧАС',
         'minutes': 'МИН',
-        'seconds': 'СЕК'
+        'seconds': 'СЕК',
+        'about_title': 'О Raqcoin',
+        'about_text': 'Raqcoin — это единственная в мире квантово-защищенная POW-блокчейн, использующая инновационные пост-квантовые криптографические алгоритмы (многомерные квадратичные полиномы). Запущенная 18 июня 2018 г. UTC, она безопасно функционирует уже много лет. Основанная на ядре ABCMint, Raqcoin предоставляет децентрализованную, безопасную и надежную инфраструктуру для торговли цифровыми активами. Исходный код открыт и доступен на <a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a>.',
+        'timeline_label': 'Безопасно работает с',
+        'timeline_years': 'ЛЕТ',
+        'timeline_months': 'МЕС',
+        'timeline_days': 'ДН',
+        'timeline_hours': 'Ч',
+        'timeline_minutes': 'МИН',
+        'timeline_seconds': 'СЕК'
       },
       'fr': {
         'title': 'Boutique Bientôt Disponible',
@@ -751,7 +963,16 @@
         'days': 'JOURS',
         'hours': 'HEU',
         'minutes': 'MIN',
-        'seconds': 'SEC'
+        'seconds': 'SEC',
+        'about_title': 'À propos de Raqcoin',
+        'about_text': 'Raqcoin est la seule blockchain POW résistante aux attaques quantiques au monde, utilisant des algorithmes cryptographiques post-quantiques innovants (polynômes quadratiques multivariés). Lancée le 18 juin 2018 UTC, elle fonctionne en toute sécurité depuis de nombreuses années. Construite sur la technologie de base ABCMint, Raqcoin fournit une infrastructure de trading d\'actifs numériques décentralisée, sécurisée et fiable. Le code source est open source et disponible sur <a href="https://github.com/abcmint/abcmint" target="_blank" rel="noopener noreferrer">GitHub</a>.',
+        'timeline_label': 'Fonctionne depuis',
+        'timeline_years': 'ANS',
+        'timeline_months': 'MOIS',
+        'timeline_days': 'JRS',
+        'timeline_hours': 'H',
+        'timeline_minutes': 'MIN',
+        'timeline_seconds': 'SEC'
       }
     };
 
@@ -765,9 +986,32 @@
     };
 
     const TARGET_DATE = new Date('2026-06-18T00:00:00Z');
+    const LAUNCH_DATE = new Date('2018-06-18T00:00:00Z');
     const CONTRACT_ADDRESS = '0x1AaA6cCF6C8674408F0Ca0843CB5BA02674B10Fd';
+    
+    function getSystemLanguage() {
+      const systemLang = navigator.language || navigator.userLanguage;
+      const langMap = {
+        'zh': 'zh-CN',
+        'zh-CN': 'zh-CN',
+        'zh-Hans': 'zh-CN',
+        'zh-TW': 'zh-TW',
+        'zh-Hant': 'zh-TW',
+        'ja': 'ja',
+        'ja-JP': 'ja',
+        'ru': 'ru',
+        'ru-RU': 'ru',
+        'fr': 'fr',
+        'fr-FR': 'fr',
+        'en': 'en',
+        'en-US': 'en',
+        'en-GB': 'en'
+      };
+      return langMap[systemLang] || 'en';
+    }
 
-    let currentLang = localStorage.getItem('raq-lang') || 'zh-CN';
+    let savedLang = localStorage.getItem('raq-lang');
+    let currentLang = savedLang || getSystemLanguage();
 
     const langToggle = document.getElementById('langToggle');
     const langDropdown = document.getElementById('langDropdown');
@@ -778,6 +1022,12 @@
     const countdownSeconds = document.getElementById('seconds');
     const contractAddressEl = document.getElementById('contractAddress');
     const copyTooltip = document.getElementById('copyTooltip');
+    const timelineYears = document.getElementById('timelineYears');
+    const timelineMonths = document.getElementById('timelineMonths');
+    const timelineDays = document.getElementById('timelineDays');
+    const timelineHours = document.getElementById('timelineHours');
+    const timelineMinutes = document.getElementById('timelineMinutes');
+    const timelineSeconds = document.getElementById('timelineSeconds');
 
     function setLanguage(lang) {
       if (!translations[lang]) return;
@@ -789,7 +1039,11 @@
         if (translations[lang][key]) {
           el.classList.add('lang-changing');
           setTimeout(() => {
-            el.textContent = translations[lang][key];
+            if (key === 'about_text') {
+              el.innerHTML = translations[lang][key];
+            } else {
+              el.textContent = translations[lang][key];
+            }
             el.classList.remove('lang-changing');
           }, 150);
         }
@@ -870,6 +1124,57 @@
 
     setInterval(updateCountdown, 1000);
     updateCountdown();
+
+    function updateTimeline() {
+      const now = new Date();
+      const diff = now - LAUNCH_DATE;
+      if (diff <= 0) {
+        timelineYears.textContent = '00';
+        timelineMonths.textContent = '00';
+        timelineDays.textContent = '00';
+        timelineHours.textContent = '00';
+        timelineMinutes.textContent = '00';
+        timelineSeconds.textContent = '00';
+        return;
+      }
+      const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const years = Math.floor(totalDays / 365);
+      const remainingDays = totalDays % 365;
+      const months = Math.floor(remainingDays / 30);
+      const days = remainingDays % 30;
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const newYears = String(years).padStart(2, '0');
+      const newMonths = String(months).padStart(2, '0');
+      const newDays = String(days).padStart(2, '0');
+      const newHours = String(hours).padStart(2, '0');
+      const newMinutes = String(minutes).padStart(2, '0');
+      const newSeconds = String(seconds).padStart(2, '0');
+
+      if (timelineYears.textContent !== newYears) {
+        timelineYears.textContent = newYears;
+      }
+      if (timelineMonths.textContent !== newMonths) {
+        timelineMonths.textContent = newMonths;
+      }
+      if (timelineDays.textContent !== newDays) {
+        timelineDays.textContent = newDays;
+      }
+      if (timelineHours.textContent !== newHours) {
+        timelineHours.textContent = newHours;
+      }
+      if (timelineMinutes.textContent !== newMinutes) {
+        timelineMinutes.textContent = newMinutes;
+      }
+      if (timelineSeconds.textContent !== newSeconds) {
+        timelineSeconds.textContent = newSeconds;
+      }
+    }
+
+    setInterval(updateTimeline, 1000);
+    updateTimeline();
 
     function copyToClipboard() {
       if (navigator.clipboard && navigator.clipboard.writeText) {
