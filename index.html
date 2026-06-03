@@ -505,19 +505,16 @@
     .timeline-info {
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 16px;
-      padding: 32px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
     }
 
     .timeline-label {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--text-tertiary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--accent-primary);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.15em;
       text-align: center;
     }
 
@@ -531,18 +528,26 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 16px 24px;
-      background: rgba(201, 162, 39, 0.05);
+      gap: 8px;
+      padding: 24px 32px;
+      background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      min-width: 70px;
+      border-radius: var(--radius-lg);
+      min-width: 90px;
+      transition: all var(--transition-normal);
     }
 
     .timeline-value {
-      font-size: 1.75rem;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
       font-weight: 700;
-      color: var(--accent-primary);
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .timeline-item:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-glow);
     }
 
     .timeline-label-text {
@@ -551,7 +556,6 @@
       color: var(--text-tertiary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-top: 4px;
     }
 
     .github-link {
@@ -662,6 +666,11 @@
         min-width: 70px;
       }
 
+      .timeline-item {
+        padding: 16px 24px;
+        min-width: 70px;
+      }
+
       .countdown-separator {
         font-size: 1.25rem;
       }
@@ -686,6 +695,16 @@
       }
 
       .countdown-item {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 60px;
+      }
+
+      .timeline-countdown {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .timeline-item {
         flex: 1 1 calc(50% - 4px);
         min-width: 60px;
       }
