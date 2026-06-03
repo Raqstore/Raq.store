@@ -6,6 +6,36 @@
   <meta name="description" content="Raq.Store - Secure & Efficient Cross-Chain Exchange Service Coming Soon">
   <title>Raq.Store - Exchange Coming Soon</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
+  <script>
+    const TARGET_LAUNCH = new Date('2026-06-18T00:00:00Z').getTime();
+    const NOW = new Date().getTime();
+    const IS_LAUNCHED = NOW >= TARGET_LAUNCH;
+    const LAUNCHED_TITLE = 'Raq.store';
+    const LAUNCHING_TITLE = '兑换店即将上线';
+    const LAUNCHED_LABEL = '上线时间';
+    const LAUNCHING_LABEL = '预计上线时间';
+    
+    function setLaunchState() {
+      const heroTitle = document.querySelector('.hero-title');
+      const launchLabel = document.querySelector('.launch-label');
+      if (IS_LAUNCHED) {
+        if (heroTitle) heroTitle.textContent = LAUNCHED_TITLE;
+        if (launchLabel) launchLabel.textContent = LAUNCHED_LABEL;
+      } else {
+        if (heroTitle) heroTitle.textContent = LAUNCHING_TITLE;
+        if (launchLabel) launchLabel.textContent = LAUNCHING_LABEL;
+      }
+      document.querySelectorAll('.hero-title, .launch-label').forEach(el => {
+        el.classList.remove('launch-hidden');
+      });
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setLaunchState);
+    } else {
+      setLaunchState();
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -291,6 +321,11 @@
       color: var(--text-tertiary);
       text-transform: uppercase;
       letter-spacing: 0.15em;
+    }
+
+    .launch-hidden {
+      opacity: 0;
+      visibility: hidden;
     }
 
     .launch-date-value {
@@ -884,13 +919,13 @@
 
   <main class="main-content">
     <section class="hero fade-in-up">
-      <h1 class="hero-title" data-i18n="title">兑换店即将上线</h1>
+      <h1 class="hero-title launch-hidden" data-i18n="title_launched">Raq.store</h1>
       <p class="hero-subtitle" data-i18n="subtitle">安全、高效的跨链兑换服务</p>
     </section>
 
     <section class="countdown-section fade-in-up delay-1">
       <div class="launch-info">
-        <span class="launch-label" data-i18n="launch_date">预计上线时间</span>
+        <span class="launch-label launch-hidden" data-i18n="launch_date_launched">上线时间</span>
         <span class="launch-date-value" data-i18n="launch_date_value">2026年6月18日 UTC</span>
       </div>
       <div class="countdown" id="countdown">
