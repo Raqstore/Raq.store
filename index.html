@@ -694,6 +694,45 @@
       transition: all var(--transition-fast);
     }
 
+    .contact-section {
+      margin-bottom: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .contact-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .contact-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all var(--transition-fast);
+    }
+
+    .contact-link:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .contact-icon {
+      font-size: 1rem;
+    }
+
     .github-link:hover {
       border-color: var(--accent-primary);
       color: var(--accent-primary);
@@ -1005,6 +1044,19 @@
         </div>
       </a>
     </section>
+
+    <section class="contact-section fade-in-up delay-6">
+      <div class="contact-links">
+        <a href="mailto:Raq.store@protonmail.com" class="contact-link">
+          <span class="contact-icon">✉</span>
+          <span data-i18n="contact_email">Raq.store@protonmail.com</span>
+        </a>
+        <a href="https://t.me/RaqStoreX" target="_blank" rel="noopener noreferrer" class="contact-link">
+          <span class="contact-icon">✈</span>
+          <span data-i18n="contact_telegram">Telegram Channel</span>
+        </a>
+      </div>
+    </section>
   </main>
 
   <footer class="footer fade-in">
@@ -1037,7 +1089,9 @@
         'timeline_days': '天',
         'timeline_hours': '时',
         'launched': '已上线',
-        'enter_store': '进入兑换店'
+        'enter_store': '进入兑换店',
+        'contact_email': 'Raq.store@protonmail.com',
+        'contact_telegram': 'Telegram 频道'
       },
       'en': {
         'title': 'Exchange Coming Soon',
@@ -1062,7 +1116,9 @@
         'timeline_days': 'DAY',
         'timeline_hours': 'HR',
         'launched': 'Launched',
-        'enter_store': 'Enter Exchange'
+        'enter_store': 'Enter Exchange',
+        'contact_email': 'Raq.store@protonmail.com',
+        'contact_telegram': 'Telegram Channel'
       },
       'zh-TW': {
         'title': '兌換店即將上線',
@@ -1087,7 +1143,9 @@
         'timeline_days': '天',
         'timeline_hours': '時',
         'launched': '已上線',
-        'enter_store': '進入兌換店'
+        'enter_store': '進入兌換店',
+        'contact_email': 'Raq.store@protonmail.com',
+        'contact_telegram': 'Telegram 頻道'
       },
       'ja': {
         'title': '交換所近日公開',
@@ -1112,7 +1170,9 @@
         'timeline_days': '日',
         'timeline_hours': '時',
         'launched': '公開済み',
-        'enter_store': '交換所に入る'
+        'enter_store': '交換所に入る',
+        'contact_email': 'Raq.store@protonmail.com',
+        'contact_telegram': 'Telegram チャンネル'
       },
       'ru': {
         'title': 'Магазин скоро откроется',
@@ -1137,7 +1197,9 @@
         'timeline_days': 'ДН',
         'timeline_hours': 'Ч',
         'launched': 'Запущено',
-        'enter_store': 'Перейти в магазин'
+        'enter_store': 'Перейти в магазин',
+        'contact_email': 'Raq.store@protonmail.com',
+        'contact_telegram': 'Канал Telegram'
       },
       'fr': {
         'title': 'Boutique Bientôt Disponible',
@@ -1162,7 +1224,9 @@
         'timeline_days': 'JRS',
         'timeline_hours': 'H',
         'launched': 'Lancé',
-        'enter_store': 'Accéder à la boutique'
+        'enter_store': 'Accéder à la boutique',
+        'contact_email': 'Raq.store@protonmail.com',
+        'contact_telegram': 'Canal Telegram'
       },
       'ar': {
         'title': 'المتجر قريباً',
@@ -1187,7 +1251,9 @@
         'timeline_days': 'أيام',
         'timeline_hours': 'ساعات',
         'launched': 'تم الإطلاق',
-        'enter_store': 'الدخول إلى المتجر'
+        'enter_store': 'الدخول إلى المتجر',
+        'contact_email': 'Raq.store@protonmail.com',
+        'contact_telegram': 'قناة تيليجرام'
       },
       'es': {
         'title': 'Tienda Pronto Disponible',
@@ -1212,7 +1278,9 @@
         'timeline_days': 'DÍAS',
         'timeline_hours': 'H',
         'launched': 'Lanzado',
-        'enter_store': 'Entrar a la tienda'
+        'enter_store': 'Entrar a la tienda',
+        'contact_email': 'Raq.store@protonmail.com',
+        'contact_telegram': 'Canal de Telegram'
       }
     };
 
