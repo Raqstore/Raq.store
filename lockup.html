@@ -268,65 +268,8 @@
       </div>
     </div>
 
-    <!-- Section 1: Locked Pool -->
-    <div class="section-title">
-      <span class="section-badge badge-gold" data-i18n="locked_pool_label">锁仓池</span>
-      <span data-i18n="locked_pool_desc">62 个不可动用地址</span>
-    </div>
-
-    <!-- Section 2: LP Supply Pool -->
-    <div class="section-title">
-      <span class="section-badge badge-green" data-i18n="lp_pool_label">LP 补充池</span>
-      <span data-i18n="lp_pool_desc">2 个流动性补充地址</span>
-    </div>
-    <div class="lp-cards">
-      <div class="lp-card">
-        <div class="lp-card-label" data-i18n="lp_pool_1">LP 补充地址 #1</div>
-        <div class="lp-card-addr"><a href="https://bscscan.com/address/0x2C97fF76fF8FB7476d1d908C5F0fCe47801E2151" target="_blank" rel="noopener noreferrer">0x2C97fF76fF8FB7476d1d908C5F0fCe47801E2151</a></div>
-        <div class="lp-card-detail">
-          <span class="lp-card-detail-label" data-i18n="lp_total">总量</span>
-          <span class="lp-card-detail-value" id="lp1Total">0</span>
-        </div>
-        <div class="lp-card-detail">
-          <span class="lp-card-detail-label" data-i18n="lp_circulated">已流通</span>
-          <span class="lp-card-detail-value" style="color: var(--green)" id="lp1Circulated">0</span>
-        </div>
-        <div class="lp-card-detail">
-          <span class="lp-card-detail-label" data-i18n="lp_remaining">在池剩余</span>
-          <span class="lp-card-detail-value" id="lp1Remaining">0</span>
-        </div>
-        <p class="note-text" id="lp1Note">-</p>
-      </div>
-      <div class="lp-card">
-        <div class="lp-card-label" data-i18n="lp_pool_2">LP 补充地址 #2</div>
-        <div class="lp-card-addr"><a href="https://bscscan.com/address/0x6291f006Df44b704a1A8fDd4CD4A5Fe772e80928" target="_blank" rel="noopener noreferrer">0x6291f006Df44b704a1A8fDd4CD4A5Fe772e80928</a></div>
-        <div class="lp-card-detail">
-          <span class="lp-card-detail-label" data-i18n="lp_total">总量</span>
-          <span class="lp-card-detail-value" id="lp2Total">0</span>
-        </div>
-        <div class="lp-card-detail">
-          <span class="lp-card-detail-label" data-i18n="lp_circulated">已流通</span>
-          <span class="lp-card-detail-value" style="color: var(--green)" id="lp2Circulated">0</span>
-        </div>
-        <div class="lp-card-detail">
-          <span class="lp-card-detail-label" data-i18n="lp_remaining">在池剩余</span>
-          <span class="lp-card-detail-value" id="lp2Remaining">0</span>
-        </div>
-        <p class="note-text" id="lp2Note">-</p>
-      </div>
-      <div class="lp-card">
-        <div class="lp-card-label" data-i18n="lp_main_pool">主 LP 流动地址</div>
-        <div class="lp-card-addr"><a href="https://bscscan.com/address/0x98da7a29fb8d183a87ec3a51fab39659eacaf743" target="_blank" rel="noopener noreferrer">0x98da7a29fb8d183a87ec3a51fab39659eacaf743</a></div>
-        <div class="lp-card-detail">
-          <span class="lp-card-detail-label" data-i18n="lp_balance">当前余额</span>
-          <span class="lp-card-detail-value" id="lpMainBalance">0</span>
-        </div>
-        <p class="note-text" id="lpMainNote" data-i18n="lp_main_note">流动性池中的代币余额</p>
-      </div>
-    </div>
-
     <!-- LP summary card -->
-    <div class="summary" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 0;">
+    <div class="summary" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0;">
       <div class="summary-card">
         <div class="summary-value" id="lpTotalSupply">-</div>
         <div class="summary-label" data-i18n="lp_total_supply">LP 补充池总量</div>
@@ -335,8 +278,13 @@
         <div class="summary-value" style="color: var(--green)" id="lpInPoolTotal">-</div>
         <div class="summary-label" data-i18n="lp_in_pool">在池总量</div>
       </div>
+      <div class="summary-card">
+        <div class="summary-value" style="color: var(--gold)" id="lpNotInPool">-</div>
+        <div class="summary-label" data-i18n="lp_not_in_pool">流动性维护</div>
+      </div>
     </div>
-  </main>
+
+    </main>
 
   <footer class="footer">
     &copy; 2026 Raq.Store &mdash; All rights reserved.
@@ -464,66 +412,43 @@
         const divisor = ethers.BigNumber.from(10).pow(decimals);
         console.log('[Sync] ✅ 获取 decimals:', decimals);
 
-        console.log('[Sync] 正在查询 62 个锁仓地址...');
+        console.log('[Sync] 正在查询锁仓地址...');
         let totalLocked = 0;
         for (let i = 0; i < LOCKUP_ADDRESSES.length; i++) {
           try {
             const bal = await contract.balanceOf(LOCKUP_ADDRESSES[i]);
             totalLocked += bal.div(divisor).toNumber();
-            if ((i + 1) % 20 === 0) {
-              console.log(`[Sync] 已查询 ${i + 1}/62 个地址`);
-              await new Promise(r => setTimeout(r, 200));
-            }
           } catch (e) {
             console.warn(`[Sync] 地址 ${LOCKUP_ADDRESSES[i]} 查询失败:`, e.message);
           }
+          if ((i + 1) % 20 === 0) {
+            console.log(`[Sync] 已查询 ${i + 1}/${LOCKUP_ADDRESSES.length} 个地址`);
+            await new Promise(r => setTimeout(r, 200));
+          }
         }
-        console.log('[Sync] ✅ 锁仓地址查询完成，总量:', totalLocked);
-
-        console.log('[Sync] 正在查询 LP 地址...');
-        const lp1Addr = ethers.utils.getAddress('0x2c97ff76ff8fb7476d1d908c5f0fce47801e2151');
-        const lp2Addr = ethers.utils.getAddress('0x6291f006df44b704a1a8fdd4cd4a5fe772e80928');
-        const lp1Bal = await contract.balanceOf(lp1Addr);
-        const lp2Bal = await contract.balanceOf(lp2Addr);
-        const lpMainAddr = ethers.utils.getAddress('0x98da7a29fb8d183a87ec3a51fab39659eacaf743');
-        const lpMainBal = await contract.balanceOf(lpMainAddr);
-        console.log('[Sync] ✅ LP 地址查询完成');
-
-        const lp1OnChain = lp1Bal.div(divisor).toNumber();
-        const lp2OnChain = lp2Bal.div(divisor).toNumber();
-        const lpMainBalance = lpMainBal.div(divisor).toNumber();
-
-        const lp1Circulated = 50000000 - lp1OnChain;
-        const lp2Circulated = 50000000 - lp2OnChain;
-
-        document.getElementById('lp1Total').textContent = formatAmount(50000000);
-        document.getElementById('lp1Remaining').textContent = formatAmount(lp1OnChain);
-        document.getElementById('lp1Circulated').textContent = formatAmount(lp1Circulated);
-        document.getElementById('lp2Total').textContent = formatAmount(50000000);
-        document.getElementById('lp2Remaining').textContent = formatAmount(lp2OnChain);
-        document.getElementById('lp2Circulated').textContent = formatAmount(lp2Circulated);
-
-        const lp1CircEl = document.getElementById('lp1Circulated');
-        const lp2CircEl = document.getElementById('lp2Circulated');
-        if (lp1Circulated > 0) {
-          lp1CircEl.textContent = formatAmount(lp1Circulated);
-        }
-        if (lp2Circulated > 0) {
-          lp2CircEl.textContent = formatAmount(lp2Circulated);
-        }
-
-        document.getElementById('lpMainBalance').textContent = formatAmount(lpMainBalance);
-
-        updateLpNotes(lp1Circulated, lp2Circulated);
+        console.log('[Sync] ✅ 地址余额查询完成');
 
         document.getElementById('lockedTotal').textContent = formatAmount(totalLocked);
         const ratio = ((totalLocked / TOTAL_SUPPLY) * 100).toFixed(2);
         document.getElementById('lockupRatio').textContent = ratio + '%';
         document.getElementById('progressFill').style.width = ratio + '%';
 
+        console.log('[Sync] 正在查询 LP 地址...');
+        const lp1Addr = ethers.utils.getAddress('0x2c97ff76ff8fb7476d1d908c5f0fce47801e2151');
+        const lp2Addr = ethers.utils.getAddress('0x6291f006df44b704a1a8fdd4cd4a5fe772e80928');
+        const lp1Bal = await contract.balanceOf(lp1Addr);
+        const lp2Bal = await contract.balanceOf(lp2Addr);
+        console.log('[Sync] ✅ LP 地址查询完成');
+
+        const lp1OnChain = lp1Bal.div(divisor).toNumber();
+        const lp2OnChain = lp2Bal.div(divisor).toNumber();
         const lpInPool = lp1OnChain + lp2OnChain;
-        document.getElementById('lpTotalSupply').textContent = formatAmount(100000000);
+
+        const lpTotal = 100000000;
+        const lpNotInPool = lpTotal - lpInPool;
+        document.getElementById('lpTotalSupply').textContent = formatAmount(lpTotal);
         document.getElementById('lpInPoolTotal').textContent = formatAmount(lpInPool);
+        document.getElementById('lpNotInPool').textContent = formatAmount(lpNotInPool);
 
         const now = new Date();
         const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
@@ -534,7 +459,6 @@
 
       } catch (err) {
         console.error('[Sync] ❌ 同步失败:', err.message);
-        console.error('[Sync] 错误详情:', err);
         syncText.setAttribute('data-i18n', 'sync_error');
         syncText.textContent = I18N[getLang()]?.sync_error || I18N.en.sync_error;
         syncSpinner.className = 'sync-spinner done';
@@ -545,28 +469,13 @@
       }
     }
 
-    // Dynamic LP notes
-    function updateLpNotes(lp1Circ, lp2Circ) {
-      const lang = getLang();
-      const dict = I18N[lang] || I18N.en;
-
-      const lp1Note = document.getElementById('lp1Note');
-      const lp1Remaining = 50000000 - lp1Circ;
-      lp1Note.textContent = formatAmount(lp1Remaining) + ' ' + (dict.lp_remaining_note || '枚在池，') + formatAmount(lp1Circ) + ' ' + (dict.lp_circulated_note || '枚已流通');
-
-      const lp2Note = document.getElementById('lp2Note');
-      const lp2Remaining = 50000000 - lp2Circ;
-      lp2Note.textContent = formatAmount(lp2Remaining) + ' ' + (dict.lp_remaining_note || '枚在池，') + formatAmount(lp2Circ) + ' ' + (dict.lp_circulated_note || '枚已流通');
-    }
-
-    // Run chain sync after page load
     window.addEventListener('load', () => {
       setTimeout(syncFromChain, 500);
     });
 
     // Multi-language
     const I18N = {
-      zh: {
+      'zh-CN': {
         back_home: '返回首页',
         lockup_title: 'BSC 锁仓信息',
         lockup_subtitle: 'Raqcoin 跨链兑换锁仓地址明细',
@@ -574,27 +483,9 @@
         locked_amount: '锁仓总量',
         locked_addresses: '锁仓地址数',
         lockup_ratio: '锁仓比例',
-        address_list: '地址列表',
-        search_placeholder: '搜索地址或数量...',
-        address: '地址',
-        locked_pool_label: '锁仓池',
-        locked_pool_desc: '62 个不可动用地址',
-        lp_pool_label: 'LP 补充池',
-        lp_pool_desc: '2 个流动性补充地址',
-        lp_pool_1: 'LP 补充地址 #1',
-        lp_pool_2: 'LP 补充地址 #2',
-        lp_main_pool: '主 LP 流动地址',
-        lp_total: '总量',
-        lp_circulated: '已流通',
-        lp_remaining: '在池剩余',
-        lp_balance: '当前余额',
-        lp_pool_1_note: '10 万枚用于流动性维护',
-        lp_pool_2_note: '尚未动用',
-        lp_main_note: '流动性池中的代币余额',
-        lp_remaining_note: '枚在池，',
-        lp_circulated_note: '枚已流通',
         lp_total_supply: 'LP 补充池总量',
         lp_in_pool: '在池总量',
+        lp_not_in_pool: '流动性维护',
         sync_loading: '正在同步链上数据...',
         sync_done: '链上数据已同步',
         sync_error: '显示静态数据 · 链上同步失败',
@@ -608,26 +499,9 @@
         locked_amount: 'Total Locked',
         locked_addresses: 'Locked Addresses',
         lockup_ratio: 'Lockup Ratio',
-        address_list: 'Address List',
-        search_placeholder: 'Search address or amount...',
-        address: 'Address',
-        locked_pool_label: 'Locked Pool',
-        locked_pool_desc: '62 inactive addresses',
-        lp_pool_label: 'LP Supply Pool',
-        lp_pool_desc: '2 liquidity supplement addresses',
-        lp_pool_1: 'LP Supply Address #1',
-        lp_pool_2: 'LP Supply Address #2',
-        lp_main_pool: 'Main LP Liquidity Address',
-        lp_total: 'Total',
-        lp_circulated: 'Circulated',
-        lp_remaining: 'Remaining in Pool',
-        lp_balance: 'Current Balance',
-        lp_pool_1_note: '100K used for liquidity maintenance',
-        lp_pool_2_note: 'Not yet used',
-        lp_main_note: 'Token balance in liquidity pool',
-        lp_circulated_note: 'used for liquidity maintenance',
         lp_total_supply: 'LP Pool Total',
         lp_in_pool: 'In Pool Total',
+        lp_not_in_pool: 'Liquidity Maintenance',
         sync_loading: 'Syncing on-chain data...',
         sync_done: 'On-chain data synced',
         sync_error: 'Showing static data · sync failed',
@@ -641,23 +515,9 @@
         locked_amount: '鎖倉總量',
         locked_addresses: '鎖倉地址數',
         lockup_ratio: '鎖倉比例',
-        address_list: '地址列表',
-        search_placeholder: '搜索地址或數量...',
-        address: '地址',
-        locked_pool_label: '鎖倉池',
-        locked_pool_desc: '62 個不可動用地址',
-        lp_pool_label: 'LP 補充池',
-        lp_pool_desc: '2 個流動性補充地址',
-        lp_pool_1: 'LP 補充地址 #1',
-        lp_pool_2: 'LP 補充地址 #2',
-        lp_total: '總量',
-        lp_circulated: '已流通',
-        lp_remaining: '在池剩餘',
-        lp_pool_1_note: '10 萬枚用於流動性維護',
-        lp_pool_2_note: '尚未動用',
-        lp_circulated_note: '枚用於流動性維護',
         lp_total_supply: 'LP 補充池總量',
         lp_in_pool: '在池總量',
+        lp_not_in_pool: '流動性維護',
         sync_loading: '正在同步鏈上數據...',
         sync_done: '鏈上數據已同步',
         sync_error: '顯示靜態數據 · 鏈上同步失敗',
@@ -671,23 +531,9 @@
         locked_amount: 'ロックアップ総量',
         locked_addresses: 'ロックアップアドレス数',
         lockup_ratio: 'ロックアップ比率',
-        address_list: 'アドレス一覧',
-        search_placeholder: 'アドレスまたは数量を検索...',
-        address: 'アドレス',
-        locked_pool_label: 'ロックアッププール',
-        locked_pool_desc: '62 の非アクティブアドレス',
-        lp_pool_label: 'LP 供給プール',
-        lp_pool_desc: '2 つの流動性補充アドレス',
-        lp_pool_1: 'LP 供給アドレス #1',
-        lp_pool_2: 'LP 供給アドレス #2',
-        lp_total: '総量',
-        lp_circulated: '流通量',
-        lp_remaining: 'プール残高',
-        lp_pool_1_note: '10万枚が流動性維持に使用',
-        lp_pool_2_note: 'まだ使用されていません',
-        lp_circulated_note: '枚が流動性維持に使用',
         lp_total_supply: 'LP プール総量',
         lp_in_pool: 'プール内総量',
+        lp_not_in_pool: '流動性維持',
         sync_loading: 'オンチェーンデータを同期中...',
         sync_done: 'オンチェーンデータ同期完了',
         sync_error: '静的データを表示中 · 同期失敗',
@@ -701,26 +547,12 @@
         locked_amount: 'Всего заблокировано',
         locked_addresses: 'Заблокированные адреса',
         lockup_ratio: 'Доля локапа',
-        address_list: 'Список адресов',
-        search_placeholder: 'Поиск адреса или суммы...',
-        address: 'Адрес',
-        locked_pool_label: 'Заблокированный пул',
-        locked_pool_desc: '62 неактивных адреса',
-        lp_pool_label: 'LP Пул пополнения',
-        lp_pool_desc: '2 адреса пополнения ликвидности',
-        lp_pool_1: 'LP Адрес пополнения #1',
-        lp_pool_2: 'LP Адрес пополнения #2',
-        lp_total: 'Всего',
-        lp_circulated: 'В обращении',
-        lp_remaining: 'Осталось в пуле',
-        lp_pool_1_note: '100K использовано для поддержания ликвидности',
-        lp_pool_2_note: 'Ещё не использован',
-        lp_circulated_note: 'использовано для поддержания ликвидности',
         lp_total_supply: 'Всего LP пул',
         lp_in_pool: 'Всего в пуле',
-        sync_loading: 'Синхронизация данных с блокчейна...',
-        sync_done: 'Данные с блокчейна синхронизированы',
-        sync_error: 'Показаны статические данные · синхронизация не удалась',
+        lp_not_in_pool: 'Обслуживание ликвидности',
+        sync_loading: 'Синхронизация данных с цепочки...',
+        sync_done: 'Данные синхронизированы',
+        sync_error: 'Показ статических данных · синхронизация не удалась',
         sync_refresh: 'Обновить',
       },
       fr: {
@@ -731,23 +563,9 @@
         locked_amount: 'Total bloqué',
         locked_addresses: 'Adresses bloquées',
         lockup_ratio: 'Ratio de lockup',
-        address_list: 'Liste des adresses',
-        search_placeholder: 'Rechercher adresse ou montant...',
-        address: 'Adresse',
-        locked_pool_label: 'Pools bloqués',
-        locked_pool_desc: '62 adresses inactives',
-        lp_pool_label: 'Pool LP',
-        lp_pool_desc: '2 adresses de supplément de liquidité',
-        lp_pool_1: 'Adresse LP #1',
-        lp_pool_2: 'Adresse LP #2',
-        lp_total: 'Total',
-        lp_circulated: 'En circulation',
-        lp_remaining: 'Restant dans le pool',
-        lp_pool_1_note: '100K utilisés pour le maintien de la liquidité',
-        lp_pool_2_note: 'Pas encore utilisé',
-        lp_circulated_note: 'utilisés pour le maintien de la liquidité',
         lp_total_supply: 'Total pool LP',
         lp_in_pool: 'Total dans le pool',
+        lp_not_in_pool: 'Maintenance de liquidité',
         sync_loading: 'Synchronisation des données on-chain...',
         sync_done: 'Données on-chain synchronisées',
         sync_error: 'Données statiques affichées · synchronisation échouée',
@@ -761,23 +579,9 @@
         locked_amount: 'إجمالي المحجوز',
         locked_addresses: 'عناوين محجوزة',
         lockup_ratio: 'نسبة الحجز',
-        address_list: 'قائمة العناوين',
-        search_placeholder: 'ابحث عن عنوان أو مبلغ...',
-        address: 'العنوان',
-        locked_pool_label: 'مجمع الحجز',
-        locked_pool_desc: '62 عنوان غير نشط',
-        lp_pool_label: 'مجمع LP',
-        lp_pool_desc: '2 عنوان تكملة السيولة',
-        lp_pool_1: 'عنوان LP #1',
-        lp_pool_2: 'عنوان LP #2',
-        lp_total: 'الإجمالي',
-        lp_circulated: 'المتداول',
-        lp_remaining: 'المتبقي في المجمع',
-        lp_pool_1_note: '100 ألف مستخدمة للحفاظ على السيولة',
-        lp_pool_2_note: 'لم تُستخدم بعد',
-        lp_circulated_note: 'مستخدمة للحفاظ على السيولة',
         lp_total_supply: 'إجمالي مجمع LP',
         lp_in_pool: 'الإجمالي في المجمع',
+        lp_not_in_pool: 'صيانة السيولة',
         sync_loading: 'جارٍ مزامنة بيانات السلسلة...',
         sync_done: 'تمت مزامنة بيانات السلسلة',
         sync_error: 'عرض بيانات ثابتة · فشلت المزامنة',
@@ -791,23 +595,9 @@
         locked_amount: 'Total bloqueado',
         locked_addresses: 'Direcciones bloqueadas',
         lockup_ratio: 'Proporción de lockup',
-        address_list: 'Lista de direcciones',
-        search_placeholder: 'Buscar dirección o cantidad...',
-        address: 'Dirección',
-        locked_pool_label: 'Pool Bloqueado',
-        locked_pool_desc: '62 direcciones inactivas',
-        lp_pool_label: 'Pool LP',
-        lp_pool_desc: '2 direcciones de suplemento de liquidez',
-        lp_pool_1: 'Dirección LP #1',
-        lp_pool_2: 'Dirección LP #2',
-        lp_total: 'Total',
-        lp_circulated: 'En circulación',
-        lp_remaining: 'Restante en el pool',
-        lp_pool_1_note: '100K usados para mantenimiento de liquidez',
-        lp_pool_2_note: 'Aún no utilizado',
-        lp_circulated_note: 'usados para mantenimiento de liquidez',
         lp_total_supply: 'Total pool LP',
         lp_in_pool: 'Total en el pool',
+        lp_not_in_pool: 'Mantenimiento de liquidez',
         sync_loading: 'Sincronizando datos on-chain...',
         sync_done: 'Datos on-chain sincronizados',
         sync_error: 'Mostrando datos estáticos · sincronización fallida',
@@ -820,7 +610,7 @@
       if (stored && I18N[stored]) return stored;
       const b = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
       if (b.startsWith('zh-tw') || b.startsWith('zh-hk')) return 'zh-TW';
-      if (b.startsWith('zh')) return 'zh';
+      if (b.startsWith('zh')) return 'zh-CN';
       if (b.startsWith('ja')) return 'ja';
       if (b.startsWith('ru')) return 'ru';
       if (b.startsWith('fr')) return 'fr';
@@ -840,11 +630,10 @@
         if (dict[key]) el.placeholder = dict[key];
       });
       localStorage.setItem('raq-lang', lang);
-      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang === 'ar' ? 'ar' : lang === 'zh-TW' ? 'zh-TW' : lang;
+      document.documentElement.lang = lang;
     }
 
     applyI18n(getLang());
-    renderTable(LOCKUP_DATA);
   </script>
 </body>
 </html>
