@@ -273,24 +273,6 @@
       <span class="section-badge badge-gold" data-i18n="locked_pool_label">锁仓池</span>
       <span data-i18n="locked_pool_desc">62 个不可动用地址</span>
     </div>
-    <div class="table-wrap">
-      <div class="table-header">
-        <span class="table-title" data-i18n="address_list">地址列表</span>
-        <input type="text" class="search-input" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="搜索地址或数量..." />
-      </div>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th data-i18n="address">地址</th>
-              <th data-i18n="locked_amount">锁仓数量</th>
-            </tr>
-          </thead>
-          <tbody id="lockupTable"></tbody>
-        </table>
-      </div>
-    </div>
 
     <!-- Section 2: LP Supply Pool -->
     <div class="section-title">
@@ -361,73 +343,6 @@
   </footer>
 
   <script>
-    // Lockup data
-    const LOCKUP_DATA = [
-      { idx: 1,  addr: '0x9bC8D0d75Be377cdC8B867Df8A51bEe6e59B54B3', amount: 23164348 },
-      { idx: 2,  addr: '0x4C41F206201e1154abD46bbc1D6F6AAd0E340178', amount: 17029290 },
-      { idx: 3,  addr: '0x5009F42B3eD3C5f5F87923510e7E7144FC926383', amount: 19733179 },
-      { idx: 4,  addr: '0x67345B289be0f71A100f8FB8339Be2f0282B66D7', amount: 24676435 },
-      { idx: 5,  addr: '0x1e78f50007f7e9955E660f60223d619499f71411', amount: 30515909 },
-      { idx: 6,  addr: '0x9AcA58242f169b091B09358e2446da60bb0b3cCc', amount: 49120274 },
-      { idx: 7,  addr: '0x9AfEbCFBE5Ac955Dd488aCD95CF7915F6B06691D', amount: 32238974 },
-      { idx: 8,  addr: '0x6C68B22E51B8cd9C7a5E798f8a449Afd227A1782', amount: 25068147 },
-      { idx: 9,  addr: '0x74f5342C2C122C87b1dDfAE5d6d8021bd09DCf5b', amount: 20584760 },
-      { idx: 10, addr: '0xA36f2f4fB2bA40cd191f613d95F04b25559e71cD', amount: 33486421 },
-      { idx: 11, addr: '0xa66D6d7Fd3f9d9658f5Be0Cce1A8CEE348285E42', amount: 39397244 },
-      { idx: 12, addr: '0x91d421586EFA44BBcD143d9FffDa8C52EfF0A09c', amount: 27809880 },
-      { idx: 13, addr: '0x0e724bae14aB45c5Fa737fC63410d239C7728abB', amount: 13809284 },
-      { idx: 14, addr: '0xC02202A704cbe2Fcae9EaA2b7E161a1Cf4276c98', amount: 26012687 },
-      { idx: 15, addr: '0x42fCC531683af3f5E57Ac720576F7Ed27AD79Fe9', amount: 25885279 },
-      { idx: 16, addr: '0x424b76E3F4aaDe92f6DB3EEb620c5Ff0b33b2615', amount: 11360664 },
-      { idx: 17, addr: '0x23709FcEd03c895d54b18dFB1378949488dbb511', amount: 23541728 },
-      { idx: 18, addr: '0x2dcFAa6422f427a897d6247Eba27151c6fc9Cd89', amount: 42426370 },
-      { idx: 19, addr: '0xB09eDbE83f3e31C4F3BBAd51bD4B293F36E2B429', amount: 15573393 },
-      { idx: 20, addr: '0x563E604aFe68cB99F9F26dB62Bd3606ec9f71e10', amount: 45566990 },
-      { idx: 21, addr: '0x1BaCaA56B73174b2958D9d0c17dC629D4962500a', amount: 29187845 },
-      { idx: 22, addr: '0x91b594943D722e2E725A9Be70B542e46c3C1a934', amount: 10438629 },
-      { idx: 23, addr: '0x3C3673EA84D867058846e5E2Eb0E1F9c5Bd7a46D', amount: 49963906 },
-      { idx: 24, addr: '0x7946f4bDAf20875Cb23c3e34263b725203EF75a5', amount: 31351553 },
-      { idx: 25, addr: '0xe095C434B0428A4a0587edD109CB026829467C88', amount: 44966492 },
-      { idx: 26, addr: '0xc13DF7d838bbe892aD72E0A9d7aC51d7993a1BC5', amount: 32283792 },
-      { idx: 27, addr: '0x066b0ffBa9E19Ba7e4cCBC8326C7EC655d9BF5f9', amount: 33324848 },
-      { idx: 28, addr: '0x4191A013CE3777a8001065aaCc1387A4e2844fED', amount: 17974432 },
-      { idx: 29, addr: '0x1E6dCe764CAAa13F30036520b74B582e599Ab0e6', amount: 43994708 },
-      { idx: 30, addr: '0x52C0863Dbf9d68075421f803607C163aa0dD0AC2', amount: 39070538 },
-      { idx: 31, addr: '0xA67858A3bA089D8cDd8730C15Fff41D1C7A784E7', amount: 18145295 },
-      { idx: 32, addr: '0xc877946d56A86B1c3bC08a0262A88C92b7239F07', amount: 16903178 },
-      { idx: 33, addr: '0xf134d616387Fbc8cEbB449E75B9B4D24badfB744', amount: 12716999 },
-      { idx: 34, addr: '0x9087da33dbe1a9C988807Fe947035E92F8756445', amount: 43207664 },
-      { idx: 35, addr: '0xC533E520a6cF12B76D7bE303Ec5A55e1b0B0d407', amount: 18553479 },
-      { idx: 36, addr: '0xC527B18Bd60F2745b5e771BC2f60D1416Dd0E9c6', amount: 16858945 },
-      { idx: 37, addr: '0x2a3795cb8E33820bc57085F6AB0444449a7572Fa', amount: 27635587 },
-      { idx: 38, addr: '0x81c46315F7708769Ec256bB8c19F19C486e4Ab98', amount: 13990694 },
-      { idx: 39, addr: '0x6CCd0Be80b655cA9977Ad0afA93Ba2ca7e0723F9', amount: 12413432 },
-      { idx: 40, addr: '0x4e911d685E2282b0e923116A7953543DC09014c9', amount: 18608303 },
-      { idx: 41, addr: '0xA01949b570bB3680DAE06b409340550bde97651E', amount: 31769209 },
-      { idx: 42, addr: '0xD9ecc150042B19800AbCd2b9d75383c17Dbdf85E', amount: 33510451 },
-      { idx: 43, addr: '0x35a24B144BD846A6Be6D950d2B620B8e6C04144E', amount: 49183642 },
-      { idx: 44, addr: '0xdA14F42D4ADC8357599f84f3c17B1Fbc6A71D12a', amount: 42092679 },
-      { idx: 45, addr: '0x01770d295C7995fe296920A40ac09Aea6f0932e8', amount: 36524978 },
-      { idx: 46, addr: '0x31b1cf4F0d3Dcf87fE77887f78681fef38B8c114', amount: 36518208 },
-      { idx: 47, addr: '0xa1619df75B8514D64F60c8EB141cC6B548aa703A', amount: 30472608 },
-      { idx: 48, addr: '0x137468dC0D0634B1c7c6629A2dA39c78f91669f0', amount: 12079535 },
-      { idx: 49, addr: '0x20998e21aB6BC5bC2418954278D45ac32806A620', amount: 45864382 },
-      { idx: 50, addr: '0x19aD78676dF90757662d63Ce80b5D53E35D421e8', amount: 16296971 },
-      { idx: 51, addr: '0xac01cE52Adce4c15e03409F7d5EcA9F3590FddDd', amount: 40277868 },
-      { idx: 52, addr: '0x5e7f4571a80F4D9749BD325D04291211D4f9e4F3', amount: 47855160 },
-      { idx: 53, addr: '0xf183fb9783EE62F158e8cf5894294dA31bE86C98', amount: 27084569 },
-      { idx: 54, addr: '0xd1cD95CC69B890aE4f9acfB63847266db872ea55', amount: 21857576 },
-      { idx: 55, addr: '0xdE2273373c957bF7c5d579881879BA101AD4BD89', amount: 20500317 },
-      { idx: 56, addr: '0xbB3ad420A1EDB970dD1de3EB14c97790f6f928B8', amount: 14726020 },
-      { idx: 57, addr: '0x73A592Ead991D93347A8041EBdF3b1a9a9668AAD', amount: 12111926 },
-      { idx: 58, addr: '0x2C77b21D2cb0Eba392596874fF14A94b9bfD2dB0', amount: 35662391 },
-      { idx: 59, addr: '0x19eF82e4194F363eFEd5f52BAb1f43DaC55Ab9e7', amount: 49349924 },
-      { idx: 60, addr: '0x172e8f5B115CA1399c611288124fC0d0aA832955', amount: 47564997 },
-      { idx: 61, addr: '0x69f2ECd7b0e7249Be8f969333731F09d32Cd09B8', amount: 28190302 },
-      { idx: 62, addr: '0xD6d614a5fa6840079F4a92A10Cf299586c0650F5', amount: 288898359 },
-    ];
-
-    const BSCSCAN_URL = 'https://bscscan.com/address/';
     const TOKEN_CONTRACT = '0x1AaA6cCF6C8674408F0Ca0843CB5BA02674B10Fd';
     const BSC_RPC_LIST = [
       'https://bsc-dataseed.binance.org',
@@ -438,32 +353,74 @@
     ];
     const TOTAL_SUPPLY = 2146983647;
 
+    const LOCKUP_ADDRESSES = [
+      '0x9bC8D0d75Be377cdC8B867Df8A51bEe6e59B54B3',
+      '0x4C41F206201e1154abD46bbc1D6F6AAd0E340178',
+      '0x5009F42B3eD3C5f5F87923510e7E7144FC926383',
+      '0x67345B289be0f71A100f8FB8339Be2f0282B66D7',
+      '0x1e78f50007f7e9955E660f60223d619499f71411',
+      '0x9AcA58242f169b091B09358e2446da60bb0b3cCc',
+      '0x9AfEbCFBE5Ac955Dd488aCD95CF7915F6B06691D',
+      '0x6C68B22E51B8cd9C7a5E798f8a449Afd227A1782',
+      '0x74f5342C2C122C87b1dDfAE5d6d8021bd09DCf5b',
+      '0xA36f2f4fB2bA40cd191f613d95F04b25559e71cD',
+      '0xa66D6d7Fd3f9d9658f5Be0Cce1A8CEE348285E42',
+      '0x91d421586EFA44BBcD143d9FffDa8C52EfF0A09c',
+      '0x0e724bae14aB45c5Fa737fC63410d239C7728abB',
+      '0xC02202A704cbe2Fcae9EaA2b7E161a1Cf4276c98',
+      '0x42fCC531683af3f5E57Ac720576F7Ed27AD79Fe9',
+      '0x424b76E3F4aaDe92f6DB3EEb620c5Ff0b33b2615',
+      '0x23709FcEd03c895d54b18dFB1378949488dbb511',
+      '0x2dcFAa6422f427a897d6247Eba27151c6fc9Cd89',
+      '0xB09eDbE83f3e31C4F3BBAd51bD4B293F36E2B429',
+      '0x563E604aFe68cB99F9F26dB62Bd3606ec9f71e10',
+      '0x1BaCaA56B73174b2958D9d0c17dC629D4962500a',
+      '0x91b594943D722e2E725A9Be70B542e46c3C1a934',
+      '0x3C3673EA84D867058846e5E2Eb0E1F9c5Bd7a46D',
+      '0x7946f4bDAf20875Cb23c3e34263b725203EF75a5',
+      '0xe095C434B0428A4a0587edD109CB026829467C88',
+      '0xc13DF7d838bbe892aD72E0A9d7aC51d7993a1BC5',
+      '0x066b0ffBa9E19Ba7e4cCBC8326C7EC655d9BF5f9',
+      '0x4191A013CE3777a8001065aaCc1387A4e2844fED',
+      '0x1E6dCe764CAAa13F30036520b74B582e599Ab0e6',
+      '0x52C0863Dbf9d68075421f803607C163aa0dD0AC2',
+      '0xA67858A3bA089D8cDd8730C15Fff41D1C7A784E7',
+      '0xc877946d56A86B1c3bC08a0262A88C92b7239F07',
+      '0xf134d616387Fbc8cEbB449E75B9B4D24badfB744',
+      '0x9087da33dbe1a9C988807Fe947035E92F8756445',
+      '0xC533E520a6cF12B76D7bE303Ec5A55e1b0B0d407',
+      '0xC527B18Bd60F2745b5e771BC2f60D1416Dd0E9c6',
+      '0x2a3795cb8E33820bc57085F6AB0444449a7572Fa',
+      '0x81c46315F7708769Ec256bB8c19F19C486e4Ab98',
+      '0x6CCd0Be80b655cA9977Ad0afA93Ba2ca7e0723F9',
+      '0x4e911d685E2282b0e923116A7953543DC09014c9',
+      '0xA01949b570bB3680DAE06b409340550bde97651E',
+      '0xD9ecc150042B19800AbCd2b9d75383c17Dbdf85E',
+      '0x35a24B144BD846A6Be6D950d2B620B8e6C04144E',
+      '0xdA14F42D4ADC8357599f84f3c17B1Fbc6A71D12a',
+      '0x01770d295C7995fe296920A40ac09Aea6f0932e8',
+      '0x31b1cf4F0d3Dcf87fE77887f78681fef38B8c114',
+      '0xa1619df75B8514D64F60c8EB141cC6B548aa703A',
+      '0x137468dC0D0634B1c7c6629A2dA39c78f91669f0',
+      '0x20998e21aB6BC5bC2418954278D45ac32806A620',
+      '0x19aD78676dF90757662d63Ce80b5D53E35D421e8',
+      '0xac01cE52Adce4c15e03409F7d5EcA9F3590FddDd',
+      '0x5e7f4571a80F4D9749BD325D04291211D4f9e4F3',
+      '0xf183fb9783EE62F158e8cf5894294dA31bE86C98',
+      '0xd1cD95CC69B890aE4f9acfB63847266db872ea55',
+      '0xdE2273373c957bF7c5d579881879BA101AD4BD89',
+      '0xbB3ad420A1EDB970dD1de3EB14c97790f6f928B8',
+      '0x73A592Ead991D93347A8041EBdF3b1a9a9668AAD',
+      '0x2C77b21D2cb0Eba392596874fF14A94b9bfD2dB0',
+      '0x19eF82e4194F363eFEd5f52BAb1f43DaC55Ab9e7',
+      '0x172e8f5B115CA1399c611288124fC0d0aA832955',
+      '0x69f2ECd7b0e7249Be8f969333731F09d32Cd09B8',
+      '0xD6d614a5fa6840079F4a92A10Cf299586c0650F5'
+    ];
+
     function formatAmount(n) {
       return n.toLocaleString();
     }
-
-    function renderTable(data) {
-      const tbody = document.getElementById('lockupTable');
-      tbody.innerHTML = data.map(row => `
-        <tr id="row-${row.idx}">
-          <td class="row-num">${row.idx}</td>
-          <td><a class="addr-link" href="${BSCSCAN_URL}${row.addr}" target="_blank" rel="noopener noreferrer">${row.addr}</a></td>
-          <td id="amount-${row.idx}">${formatAmount(row.amount)}</td>
-        </tr>
-      `).join('');
-    }
-
-    // Search
-    document.getElementById('searchInput').addEventListener('input', function() {
-      const q = this.value.trim().toLowerCase();
-      if (!q) { renderTable(LOCKUP_DATA); return; }
-      const filtered = LOCKUP_DATA.filter(row =>
-        row.addr.toLowerCase().includes(q) ||
-        row.amount.toString().includes(q) ||
-        formatAmount(row.amount).includes(q)
-      );
-      renderTable(filtered);
-    });
 
     async function getWorkingProvider() {
       for (let i = 0; i < BSC_RPC_LIST.length; i++) {
@@ -508,37 +465,20 @@
         console.log('[Sync] ✅ 获取 decimals:', decimals);
 
         console.log('[Sync] 正在查询 62 个锁仓地址...');
-        const balances = [];
-        for (let i = 0; i < LOCKUP_DATA.length; i++) {
+        let totalLocked = 0;
+        for (let i = 0; i < LOCKUP_ADDRESSES.length; i++) {
           try {
-            const bal = await contract.balanceOf(LOCKUP_DATA[i].addr);
-            balances.push(bal);
+            const bal = await contract.balanceOf(LOCKUP_ADDRESSES[i]);
+            totalLocked += bal.div(divisor).toNumber();
             if ((i + 1) % 20 === 0) {
               console.log(`[Sync] 已查询 ${i + 1}/62 个地址`);
               await new Promise(r => setTimeout(r, 200));
             }
           } catch (e) {
-            console.warn(`[Sync] 地址 ${LOCKUP_DATA[i].addr} 查询失败:`, e.message);
-            balances.push(ethers.BigNumber.from(0));
+            console.warn(`[Sync] 地址 ${LOCKUP_ADDRESSES[i]} 查询失败:`, e.message);
           }
         }
-        console.log('[Sync] ✅ 地址余额查询完成');
-
-        let totalLocked = 0;
-        balances.forEach((bal, i) => {
-          const onChain = bal.div(divisor).toNumber();
-          LOCKUP_DATA[i].amount = onChain;
-          totalLocked += onChain;
-        });
-
-        LOCKUP_DATA.forEach(row => {
-          const el = document.getElementById('amount-' + row.idx);
-          if (el) {
-            el.textContent = formatAmount(row.amount);
-            el.classList.add('amount-updated');
-          }
-        });
-        console.log('[Sync] ✅ 锁仓表格更新完成');
+        console.log('[Sync] ✅ 锁仓地址查询完成，总量:', totalLocked);
 
         console.log('[Sync] 正在查询 LP 地址...');
         const lp1Addr = ethers.utils.getAddress('0x2c97ff76ff8fb7476d1d908c5f0fce47801e2151');
