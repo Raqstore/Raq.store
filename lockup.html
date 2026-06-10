@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raq.Store - Lockup Information</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-input: #1a1a25;
+      --gold: #d4af37;
+      --gold-dim: rgba(212,175,55,0.15);
+      --green: #4ade80;
+      --green-dim: rgba(74,222,128,0.12);
+      --blue: #60a5fa;
+      --blue-dim: rgba(96,165,250,0.12);
+      --text-primary: #e0e0e0;
+      --text-secondary: #888;
+      --border-color: rgba(255,255,255,0.06);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .nav-logo {
+      width: 28px; height: 28px; border-radius: 6px;
+      object-fit: contain;
+    }
+    .nav-title { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; }
+    .nav-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: 20px;
+      border: 1px solid var(--border-color);
+      font-size: 13px; color: var(--text-secondary);
+      transition: all .25s;
+    }
+    .nav-back:hover { border-color: var(--gold); color: var(--gold); }
+
+    .main { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+    .page-title {
+      text-align: center; font-size: 28px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .page-subtitle {
+      text-align: center; color: var(--text-secondary);
+      font-size: 14px; margin-bottom: 36px;
+    }
+
+    .summary {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      margin-bottom: 40px;
+    }
+    .summary-card {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 14px; padding: 24px 20px; text-align: center;
+    }
+    .summary-value {
+      font-size: 22px; font-weight: 700; color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .summary-label {
+      font-size: 12px; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .progress-wrap { margin-bottom: 40px; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      height: 8px; border-radius: 4px;
+      background: var(--bg-input); overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(90deg, var(--gold), #e8c84a);
+      transition: width 1s ease;
+    }
+
+    /* Sync status */
+    .sync-status {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 8px; padding: 8px 20px; margin-bottom: 16px;
+      font-size: 12px; color: var(--text-secondary);
+    }
+    .sync-spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid var(--border-color); border-top-color: var(--gold);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    .sync-spinner.done { border-top-color: var(--green); animation: none; }
+    .sync-spinner.loading { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .sync-btn {
+      background: none; border: 1px solid var(--border-color);
+      color: var(--text-secondary); font-size: 12px; padding: 4px 12px;
+      border-radius: 12px; cursor: pointer; transition: all .25s;
+    }
+    .sync-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    .section-title {
+      font-size: 18px; font-weight: 600; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+    }
+    .badge-gold { background: var(--gold-dim); color: var(--gold); }
+    .badge-green { background: var(--green-dim); color: var(--green); }
+
+    .table-wrap {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 14px; overflow: hidden; margin-bottom: 48px;
+    }
+    .table-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+    }
+    .table-title { font-size: 14px; font-weight: 600; }
+    .search-input {
+      background: var(--bg-input); border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 8px 14px;
+      color: var(--text-primary); font-size: 13px;
+      outline: none; width: 220px; transition: border-color .25s;
+    }
+    .search-input::placeholder { color: var(--text-secondary); }
+    .search-input:focus { border-color: var(--gold); }
+
+    .table-scroll { max-height: 520px; overflow-y: auto; }
+    .table-scroll::-webkit-scrollbar { width: 6px; }
+    .table-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      position: sticky; top: 0; z-index: 2;
+      background: var(--bg-card);
+      padding: 12px 20px; text-align: left;
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    thead th:last-child { text-align: right; }
+    tbody td {
+      padding: 12px 20px; font-size: 13px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    tbody td:last-child { text-align: right; font-family: 'SF Mono', 'Consolas', monospace; }
+    tbody tr:hover { background: var(--gold-dim); }
+    .addr-link { color: var(--gold); transition: opacity .2s; }
+    .addr-link:hover { opacity: 0.7; text-decoration: underline; }
+    .row-num { color: var(--text-secondary); width: 40px; }
+    .amount-updated {
+      color: var(--green);
+      transition: color 0.6s ease;
+    }
+
+    .lp-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      margin-bottom: 48px;
+    }
+    .lp-card {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 14px; padding: 24px 20px;
+    }
+    .lp-card-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-secondary); margin-bottom: 12px;
+    }
+    .lp-card-addr {
+      font-family: 'SF Mono', 'Consolas', monospace; font-size: 12px;
+      color: var(--gold); margin-bottom: 12px; word-break: break-all;
+    }
+    .lp-card-addr a { color: var(--gold); }
+    .lp-card-addr a:hover { text-decoration: underline; }
+    .lp-card-detail {
+      display: flex; justify-content: space-between;
+      font-size: 13px; padding: 6px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .lp-card-detail:last-child { border-bottom: none; }
+    .lp-card-detail-label { color: var(--text-secondary); }
+    .lp-card-detail-value { font-family: 'SF Mono', 'Consolas', monospace; }
+    .note-text { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+
+    .footer {
+      text-align: center; padding: 24px;
+      font-size: 12px; color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+    }
+
+    @media (max-width: 640px) {
+      .summary { grid-template-columns: 1fr; }
+      .lp-cards { grid-template-columns: 1fr; }
+      .table-header { flex-direction: column; gap: 10px; }
+      .search-input { width: 100%; }
+      thead th, tbody td { padding: 10px 12px; font-size: 11px; }
+      .nav { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-brand">
+      <img src="assets/logo.png" alt="Raqcoin Logo" class="nav-logo" />
+      <span class="nav-title">Raq.Store</span>
+    </div>
+    <a href="index.html" class="nav-back">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span data-i18n="back_home">返回首页</span>
+    </a>
+  </nav>
+
+  <main class="main">
+    <h1 class="page-title" data-i18n="lockup_title">BSC 锁仓信息</h1>
+    <p class="page-subtitle" data-i18n="lockup_subtitle">Raqcoin 跨链兑换锁仓地址明细</p>
+
+    <!-- Summary -->
+    <div class="summary">
+      <div class="summary-card">
+        <div class="summary-value">2,146,983,647</div>
+        <div class="summary-label" data-i18n="total_supply">总发行量</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" id="lockedTotal">2,046,983,647</div>
+        <div class="summary-label" data-i18n="locked_amount">锁仓总量</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value">62</div>
+        <div class="summary-label" data-i18n="locked_addresses">锁仓地址数</div>
+      </div>
+    </div>
+
+    <!-- Sync Status -->
+    <div class="sync-status" id="syncStatus">
+      <span class="sync-spinner loading"></span>
+      <span id="syncText" data-i18n="sync_loading">正在同步链上数据...</span>
+      <button class="sync-btn" id="syncBtn" onclick="syncFromChain()" data-i18n="sync_refresh">刷新数据</button>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span data-i18n="lockup_ratio">锁仓比例</span>
+        <span id="lockupRatio">95.34%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 95.34%"></div>
+      </div>
+    </div>
+
+    <!-- Section 1: Locked Pool -->
+    <div class="section-title">
+      <span class="section-badge badge-gold" data-i18n="locked_pool_label">锁仓池</span>
+      <span data-i18n="locked_pool_desc">62 个不可动用地址</span>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title" data-i18n="address_list">地址列表</span>
+        <input type="text" class="search-input" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="搜索地址或数量..." />
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th data-i18n="address">地址</th>
+              <th data-i18n="locked_amount">锁仓数量</th>
+            </tr>
+          </thead>
+          <tbody id="lockupTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 2: LP Supply Pool -->
+    <div class="section-title">
+      <span class="section-badge badge-green" data-i18n="lp_pool_label">LP 补充池</span>
+      <span data-i18n="lp_pool_desc">2 个流动性补充地址</span>
+    </div>
+    <div class="lp-cards">
+      <div class="lp-card">
+        <div class="lp-card-label" data-i18n="lp_pool_1">LP 补充地址 #1</div>
+        <div class="lp-card-addr"><a href="https://bscscan.com/address/0x2C97fF76fF8FB7476d1d908C5F0fCe47801E2151" target="_blank" rel="noopener noreferrer">0x2C97fF76fF8FB7476d1d908C5F0fCe47801E2151</a></div>
+        <div class="lp-card-detail">
+          <span class="lp-card-detail-label" data-i18n="lp_total">总量</span>
+          <span class="lp-card-detail-value" id="lp1Total">0</span>
+        </div>
+        <div class="lp-card-detail">
+          <span class="lp-card-detail-label" data-i18n="lp_circulated">已流通</span>
+          <span class="lp-card-detail-value" style="color: var(--green)" id="lp1Circulated">0</span>
+        </div>
+        <div class="lp-card-detail">
+          <span class="lp-card-detail-label" data-i18n="lp_remaining">在池剩余</span>
+          <span class="lp-card-detail-value" id="lp1Remaining">0</span>
+        </div>
+        <p class="note-text" id="lp1Note">-</p>
+      </div>
+      <div class="lp-card">
+        <div class="lp-card-label" data-i18n="lp_pool_2">LP 补充地址 #2</div>
+        <div class="lp-card-addr"><a href="https://bscscan.com/address/0x6291f006Df44b704a1A8fDd4CD4A5Fe772e80928" target="_blank" rel="noopener noreferrer">0x6291f006Df44b704a1A8fDd4CD4A5Fe772e80928</a></div>
+        <div class="lp-card-detail">
+          <span class="lp-card-detail-label" data-i18n="lp_total">总量</span>
+          <span class="lp-card-detail-value" id="lp2Total">0</span>
+        </div>
+        <div class="lp-card-detail">
+          <span class="lp-card-detail-label" data-i18n="lp_circulated">已流通</span>
+          <span class="lp-card-detail-value" style="color: var(--green)" id="lp2Circulated">0</span>
+        </div>
+        <div class="lp-card-detail">
+          <span class="lp-card-detail-label" data-i18n="lp_remaining">在池剩余</span>
+          <span class="lp-card-detail-value" id="lp2Remaining">0</span>
+        </div>
+        <p class="note-text" id="lp2Note">-</p>
+      </div>
+      <div class="lp-card">
+        <div class="lp-card-label" data-i18n="lp_main_pool">主 LP 流动地址</div>
+        <div class="lp-card-addr"><a href="https://bscscan.com/address/0x98da7a29fb8d183a87ec3a51fab39659eacaf743" target="_blank" rel="noopener noreferrer">0x98da7a29fb8d183a87ec3a51fab39659eacaf743</a></div>
+        <div class="lp-card-detail">
+          <span class="lp-card-detail-label" data-i18n="lp_balance">当前余额</span>
+          <span class="lp-card-detail-value" id="lpMainBalance">0</span>
+        </div>
+        <p class="note-text" id="lpMainNote" data-i18n="lp_main_note">流动性池中的代币余额</p>
+      </div>
+    </div>
+
+    <!-- LP summary card -->
+    <div class="summary" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 0;">
+      <div class="summary-card">
+        <div class="summary-value" id="lpTotalSupply">-</div>
+        <div class="summary-label" data-i18n="lp_total_supply">LP 补充池总量</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" style="color: var(--green)" id="lpInPoolTotal">-</div>
+        <div class="summary-label" data-i18n="lp_in_pool">在池总量</div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    &copy; 2026 Raq.Store &mdash; All rights reserved.
+  </footer>
+
+  <script>
+    // Lockup data
+    const LOCKUP_DATA = [
+      { idx: 1,  addr: '0x9bC8D0d75Be377cdC8B867Df8A51bEe6e59B54B3', amount: 23164348 },
+      { idx: 2,  addr: '0x4C41F206201e1154abD46bbc1D6F6AAd0E340178', amount: 17029290 },
+      { idx: 3,  addr: '0x5009F42B3eD3C5f5F87923510e7E7144FC926383', amount: 19733179 },
+      { idx: 4,  addr: '0x67345B289be0f71A100f8FB8339Be2f0282B66D7', amount: 24676435 },
+      { idx: 5,  addr: '0x1e78f50007f7e9955E660f60223d619499f71411', amount: 30515909 },
+      { idx: 6,  addr: '0x9AcA58242f169b091B09358e2446da60bb0b3cCc', amount: 49120274 },
+      { idx: 7,  addr: '0x9AfEbCFBE5Ac955Dd488aCD95CF7915F6B06691D', amount: 32238974 },
+      { idx: 8,  addr: '0x6C68B22E51B8cd9C7a5E798f8a449Afd227A1782', amount: 25068147 },
+      { idx: 9,  addr: '0x74f5342C2C122C87b1dDfAE5d6d8021bd09DCf5b', amount: 20584760 },
+      { idx: 10, addr: '0xA36f2f4fB2bA40cd191f613d95F04b25559e71cD', amount: 33486421 },
+      { idx: 11, addr: '0xa66D6d7Fd3f9d9658f5Be0Cce1A8CEE348285E42', amount: 39397244 },
+      { idx: 12, addr: '0x91d421586EFA44BBcD143d9FffDa8C52EfF0A09c', amount: 27809880 },
+      { idx: 13, addr: '0x0e724bae14aB45c5Fa737fC63410d239C7728abB', amount: 13809284 },
+      { idx: 14, addr: '0xC02202A704cbe2Fcae9EaA2b7E161a1Cf4276c98', amount: 26012687 },
+      { idx: 15, addr: '0x42fCC531683af3f5E57Ac720576F7Ed27AD79Fe9', amount: 25885279 },
+      { idx: 16, addr: '0x424b76E3F4aaDe92f6DB3EEb620c5Ff0b33b2615', amount: 11360664 },
+      { idx: 17, addr: '0x23709FcEd03c895d54b18dFB1378949488dbb511', amount: 23541728 },
+      { idx: 18, addr: '0x2dcFAa6422f427a897d6247Eba27151c6fc9Cd89', amount: 42426370 },
+      { idx: 19, addr: '0xB09eDbE83f3e31C4F3BBAd51bD4B293F36E2B429', amount: 15573393 },
+      { idx: 20, addr: '0x563E604aFe68cB99F9F26dB62Bd3606ec9f71e10', amount: 45566990 },
+      { idx: 21, addr: '0x1BaCaA56B73174b2958D9d0c17dC629D4962500a', amount: 29187845 },
+      { idx: 22, addr: '0x91b594943D722e2E725A9Be70B542e46c3C1a934', amount: 10438629 },
+      { idx: 23, addr: '0x3C3673EA84D867058846e5E2Eb0E1F9c5Bd7a46D', amount: 49963906 },
+      { idx: 24, addr: '0x7946f4bDAf20875Cb23c3e34263b725203EF75a5', amount: 31351553 },
+      { idx: 25, addr: '0xe095C434B0428A4a0587edD109CB026829467C88', amount: 44966492 },
+      { idx: 26, addr: '0xc13DF7d838bbe892aD72E0A9d7aC51d7993a1BC5', amount: 32283792 },
+      { idx: 27, addr: '0x066b0ffBa9E19Ba7e4cCBC8326C7EC655d9BF5f9', amount: 33324848 },
+      { idx: 28, addr: '0x4191A013CE3777a8001065aaCc1387A4e2844fED', amount: 17974432 },
+      { idx: 29, addr: '0x1E6dCe764CAAa13F30036520b74B582e599Ab0e6', amount: 43994708 },
+      { idx: 30, addr: '0x52C0863Dbf9d68075421f803607C163aa0dD0AC2', amount: 39070538 },
+      { idx: 31, addr: '0xA67858A3bA089D8cDd8730C15Fff41D1C7A784E7', amount: 18145295 },
+      { idx: 32, addr: '0xc877946d56A86B1c3bC08a0262A88C92b7239F07', amount: 16903178 },
+      { idx: 33, addr: '0xf134d616387Fbc8cEbB449E75B9B4D24badfB744', amount: 12716999 },
+      { idx: 34, addr: '0x9087da33dbe1a9C988807Fe947035E92F8756445', amount: 43207664 },
+      { idx: 35, addr: '0xC533E520a6cF12B76D7bE303Ec5A55e1b0B0d407', amount: 18553479 },
+      { idx: 36, addr: '0xC527B18Bd60F2745b5e771BC2f60D1416Dd0E9c6', amount: 16858945 },
+      { idx: 37, addr: '0x2a3795cb8E33820bc57085F6AB0444449a7572Fa', amount: 27635587 },
+      { idx: 38, addr: '0x81c46315F7708769Ec256bB8c19F19C486e4Ab98', amount: 13990694 },
+      { idx: 39, addr: '0x6CCd0Be80b655cA9977Ad0afA93Ba2ca7e0723F9', amount: 12413432 },
+      { idx: 40, addr: '0x4e911d685E2282b0e923116A7953543DC09014c9', amount: 18608303 },
+      { idx: 41, addr: '0xA01949b570bB3680DAE06b409340550bde97651E', amount: 31769209 },
+      { idx: 42, addr: '0xD9ecc150042B19800AbCd2b9d75383c17Dbdf85E', amount: 33510451 },
+      { idx: 43, addr: '0x35a24B144BD846A6Be6D950d2B620B8e6C04144E', amount: 49183642 },
+      { idx: 44, addr: '0xdA14F42D4ADC8357599f84f3c17B1Fbc6A71D12a', amount: 42092679 },
+      { idx: 45, addr: '0x01770d295C7995fe296920A40ac09Aea6f0932e8', amount: 36524978 },
+      { idx: 46, addr: '0x31b1cf4F0d3Dcf87fE77887f78681fef38B8c114', amount: 36518208 },
+      { idx: 47, addr: '0xa1619df75B8514D64F60c8EB141cC6B548aa703A', amount: 30472608 },
+      { idx: 48, addr: '0x137468dC0D0634B1c7c6629A2dA39c78f91669f0', amount: 12079535 },
+      { idx: 49, addr: '0x20998e21aB6BC5bC2418954278D45ac32806A620', amount: 45864382 },
+      { idx: 50, addr: '0x19aD78676dF90757662d63Ce80b5D53E35D421e8', amount: 16296971 },
+      { idx: 51, addr: '0xac01cE52Adce4c15e03409F7d5EcA9F3590FddDd', amount: 40277868 },
+      { idx: 52, addr: '0x5e7f4571a80F4D9749BD325D04291211D4f9e4F3', amount: 47855160 },
+      { idx: 53, addr: '0xf183fb9783EE62F158e8cf5894294dA31bE86C98', amount: 27084569 },
+      { idx: 54, addr: '0xd1cD95CC69B890aE4f9acfB63847266db872ea55', amount: 21857576 },
+      { idx: 55, addr: '0xdE2273373c957bF7c5d579881879BA101AD4BD89', amount: 20500317 },
+      { idx: 56, addr: '0xbB3ad420A1EDB970dD1de3EB14c97790f6f928B8', amount: 14726020 },
+      { idx: 57, addr: '0x73A592Ead991D93347A8041EBdF3b1a9a9668AAD', amount: 12111926 },
+      { idx: 58, addr: '0x2C77b21D2cb0Eba392596874fF14A94b9bfD2dB0', amount: 35662391 },
+      { idx: 59, addr: '0x19eF82e4194F363eFEd5f52BAb1f43DaC55Ab9e7', amount: 49349924 },
+      { idx: 60, addr: '0x172e8f5B115CA1399c611288124fC0d0aA832955', amount: 47564997 },
+      { idx: 61, addr: '0x69f2ECd7b0e7249Be8f969333731F09d32Cd09B8', amount: 28190302 },
+      { idx: 62, addr: '0xD6d614a5fa6840079F4a92A10Cf299586c0650F5', amount: 288898359 },
+    ];
+
+    const BSCSCAN_URL = 'https://bscscan.com/address/';
+    const TOKEN_CONTRACT = '0x1AaA6cCF6C8674408F0Ca0843CB5BA02674B10Fd';
+    const BSC_RPC_LIST = [
+      'https://bsc-dataseed.binance.org',
+      'https://bsc-dataseed1.defibit.io',
+      'https://bsc-dataseed1.ninicoin.io',
+      'https://bsc-dataseed2.defibit.io',
+      'https://bsc-dataseed3.defibit.io'
+    ];
+    const TOTAL_SUPPLY = 2146983647;
+
+    function formatAmount(n) {
+      return n.toLocaleString();
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('lockupTable');
+      tbody.innerHTML = data.map(row => `
+        <tr id="row-${row.idx}">
+          <td class="row-num">${row.idx}</td>
+          <td><a class="addr-link" href="${BSCSCAN_URL}${row.addr}" target="_blank" rel="noopener noreferrer">${row.addr}</a></td>
+          <td id="amount-${row.idx}">${formatAmount(row.amount)}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Search
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      if (!q) { renderTable(LOCKUP_DATA); return; }
+      const filtered = LOCKUP_DATA.filter(row =>
+        row.addr.toLowerCase().includes(q) ||
+        row.amount.toString().includes(q) ||
+        formatAmount(row.amount).includes(q)
+      );
+      renderTable(filtered);
+    });
+
+    async function getWorkingProvider() {
+      for (let i = 0; i < BSC_RPC_LIST.length; i++) {
+        try {
+          const provider = new ethers.providers.JsonRpcProvider(BSC_RPC_LIST[i]);
+          await provider.getBlockNumber();
+          return provider;
+        } catch (err) {
+          console.warn(`RPC node ${BSC_RPC_LIST[i]} failed:`, err.message);
+        }
+      }
+      return null;
+    }
+
+    async function syncFromChain() {
+      const syncText = document.getElementById('syncText');
+      const syncSpinner = syncText.parentElement.querySelector('.sync-spinner');
+      const syncBtn = document.getElementById('syncBtn');
+      syncSpinner.className = 'sync-spinner loading';
+      syncText.setAttribute('data-i18n', 'sync_loading');
+      syncText.textContent = I18N[getLang()]?.sync_loading || I18N.en.sync_loading;
+      syncBtn.disabled = true;
+      syncBtn.style.opacity = '0.5';
+
+      try {
+        console.log('[Sync] 开始同步链上数据...');
+        
+        const provider = await getWorkingProvider();
+        if (!provider) {
+          throw new Error('All RPC nodes are unavailable');
+        }
+        console.log('[Sync] ✅ Provider 连接成功');
+
+        const contract = new ethers.Contract(TOKEN_CONTRACT, [
+          'function balanceOf(address owner) view returns (uint256)',
+          'function decimals() view returns (uint8)'
+        ], provider);
+        console.log('[Sync] ✅ 合约实例创建成功');
+
+        const decimals = await contract.decimals();
+        const divisor = ethers.BigNumber.from(10).pow(decimals);
+        console.log('[Sync] ✅ 获取 decimals:', decimals);
+
+        console.log('[Sync] 正在查询 62 个锁仓地址...');
+        const balances = [];
+        for (let i = 0; i < LOCKUP_DATA.length; i++) {
+          try {
+            const bal = await contract.balanceOf(LOCKUP_DATA[i].addr);
+            balances.push(bal);
+            if ((i + 1) % 20 === 0) {
+              console.log(`[Sync] 已查询 ${i + 1}/62 个地址`);
+              await new Promise(r => setTimeout(r, 200));
+            }
+          } catch (e) {
+            console.warn(`[Sync] 地址 ${LOCKUP_DATA[i].addr} 查询失败:`, e.message);
+            balances.push(ethers.BigNumber.from(0));
+          }
+        }
+        console.log('[Sync] ✅ 地址余额查询完成');
+
+        let totalLocked = 0;
+        balances.forEach((bal, i) => {
+          const onChain = bal.div(divisor).toNumber();
+          LOCKUP_DATA[i].amount = onChain;
+          totalLocked += onChain;
+        });
+
+        LOCKUP_DATA.forEach(row => {
+          const el = document.getElementById('amount-' + row.idx);
+          if (el) {
+            el.textContent = formatAmount(row.amount);
+            el.classList.add('amount-updated');
+          }
+        });
+        console.log('[Sync] ✅ 锁仓表格更新完成');
+
+        console.log('[Sync] 正在查询 LP 地址...');
+        const lp1Addr = ethers.utils.getAddress('0x2c97ff76ff8fb7476d1d908c5f0fce47801e2151');
+        const lp2Addr = ethers.utils.getAddress('0x6291f006df44b704a1a8fdd4cd4a5fe772e80928');
+        const lp1Bal = await contract.balanceOf(lp1Addr);
+        const lp2Bal = await contract.balanceOf(lp2Addr);
+        const lpMainAddr = ethers.utils.getAddress('0x98da7a29fb8d183a87ec3a51fab39659eacaf743');
+        const lpMainBal = await contract.balanceOf(lpMainAddr);
+        console.log('[Sync] ✅ LP 地址查询完成');
+
+        const lp1OnChain = lp1Bal.div(divisor).toNumber();
+        const lp2OnChain = lp2Bal.div(divisor).toNumber();
+        const lpMainBalance = lpMainBal.div(divisor).toNumber();
+
+        const lp1Circulated = 50000000 - lp1OnChain;
+        const lp2Circulated = 50000000 - lp2OnChain;
+
+        document.getElementById('lp1Total').textContent = formatAmount(50000000);
+        document.getElementById('lp1Remaining').textContent = formatAmount(lp1OnChain);
+        document.getElementById('lp1Circulated').textContent = formatAmount(lp1Circulated);
+        document.getElementById('lp2Total').textContent = formatAmount(50000000);
+        document.getElementById('lp2Remaining').textContent = formatAmount(lp2OnChain);
+        document.getElementById('lp2Circulated').textContent = formatAmount(lp2Circulated);
+
+        const lp1CircEl = document.getElementById('lp1Circulated');
+        const lp2CircEl = document.getElementById('lp2Circulated');
+        if (lp1Circulated > 0) {
+          lp1CircEl.textContent = formatAmount(lp1Circulated);
+        }
+        if (lp2Circulated > 0) {
+          lp2CircEl.textContent = formatAmount(lp2Circulated);
+        }
+
+        document.getElementById('lpMainBalance').textContent = formatAmount(lpMainBalance);
+
+        updateLpNotes(lp1Circulated, lp2Circulated);
+
+        document.getElementById('lockedTotal').textContent = formatAmount(totalLocked);
+        const ratio = ((totalLocked / TOTAL_SUPPLY) * 100).toFixed(2);
+        document.getElementById('lockupRatio').textContent = ratio + '%';
+        document.getElementById('progressFill').style.width = ratio + '%';
+
+        const lpInPool = lp1OnChain + lp2OnChain;
+        document.getElementById('lpTotalSupply').textContent = formatAmount(100000000);
+        document.getElementById('lpInPoolTotal').textContent = formatAmount(lpInPool);
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+        syncText.setAttribute('data-i18n', 'sync_done');
+        syncText.textContent = (I18N[getLang()]?.sync_done || I18N.en.sync_done) + ' · 更新于 ' + timeStr;
+        syncSpinner.className = 'sync-spinner done';
+        console.log('[Sync] ✅ 同步完成! 总锁仓:', formatAmount(totalLocked));
+
+      } catch (err) {
+        console.error('[Sync] ❌ 同步失败:', err.message);
+        console.error('[Sync] 错误详情:', err);
+        syncText.setAttribute('data-i18n', 'sync_error');
+        syncText.textContent = I18N[getLang()]?.sync_error || I18N.en.sync_error;
+        syncSpinner.className = 'sync-spinner done';
+        syncSpinner.style.borderTopColor = 'var(--gold)';
+      } finally {
+        syncBtn.disabled = false;
+        syncBtn.style.opacity = '1';
+      }
+    }
+
+    // Dynamic LP notes
+    function updateLpNotes(lp1Circ, lp2Circ) {
+      const lang = getLang();
+      const dict = I18N[lang] || I18N.en;
+
+      const lp1Note = document.getElementById('lp1Note');
+      const lp1Remaining = 50000000 - lp1Circ;
+      lp1Note.textContent = formatAmount(lp1Remaining) + ' ' + (dict.lp_remaining_note || '枚在池，') + formatAmount(lp1Circ) + ' ' + (dict.lp_circulated_note || '枚已流通');
+
+      const lp2Note = document.getElementById('lp2Note');
+      const lp2Remaining = 50000000 - lp2Circ;
+      lp2Note.textContent = formatAmount(lp2Remaining) + ' ' + (dict.lp_remaining_note || '枚在池，') + formatAmount(lp2Circ) + ' ' + (dict.lp_circulated_note || '枚已流通');
+    }
+
+    // Run chain sync after page load
+    window.addEventListener('load', () => {
+      setTimeout(syncFromChain, 500);
+    });
+
+    // Multi-language
+    const I18N = {
+      zh: {
+        back_home: '返回首页',
+        lockup_title: 'BSC 锁仓信息',
+        lockup_subtitle: 'Raqcoin 跨链兑换锁仓地址明细',
+        total_supply: '总发行量',
+        locked_amount: '锁仓总量',
+        locked_addresses: '锁仓地址数',
+        lockup_ratio: '锁仓比例',
+        address_list: '地址列表',
+        search_placeholder: '搜索地址或数量...',
+        address: '地址',
+        locked_pool_label: '锁仓池',
+        locked_pool_desc: '62 个不可动用地址',
+        lp_pool_label: 'LP 补充池',
+        lp_pool_desc: '2 个流动性补充地址',
+        lp_pool_1: 'LP 补充地址 #1',
+        lp_pool_2: 'LP 补充地址 #2',
+        lp_main_pool: '主 LP 流动地址',
+        lp_total: '总量',
+        lp_circulated: '已流通',
+        lp_remaining: '在池剩余',
+        lp_balance: '当前余额',
+        lp_pool_1_note: '10 万枚用于流动性维护',
+        lp_pool_2_note: '尚未动用',
+        lp_main_note: '流动性池中的代币余额',
+        lp_remaining_note: '枚在池，',
+        lp_circulated_note: '枚已流通',
+        lp_total_supply: 'LP 补充池总量',
+        lp_in_pool: '在池总量',
+        sync_loading: '正在同步链上数据...',
+        sync_done: '链上数据已同步',
+        sync_error: '显示静态数据 · 链上同步失败',
+        sync_refresh: '刷新数据',
+      },
+      en: {
+        back_home: 'Back to Home',
+        lockup_title: 'BSC Lockup Information',
+        lockup_subtitle: 'Raqcoin Cross-Chain Swap Lockup Addresses',
+        total_supply: 'Total Supply',
+        locked_amount: 'Total Locked',
+        locked_addresses: 'Locked Addresses',
+        lockup_ratio: 'Lockup Ratio',
+        address_list: 'Address List',
+        search_placeholder: 'Search address or amount...',
+        address: 'Address',
+        locked_pool_label: 'Locked Pool',
+        locked_pool_desc: '62 inactive addresses',
+        lp_pool_label: 'LP Supply Pool',
+        lp_pool_desc: '2 liquidity supplement addresses',
+        lp_pool_1: 'LP Supply Address #1',
+        lp_pool_2: 'LP Supply Address #2',
+        lp_main_pool: 'Main LP Liquidity Address',
+        lp_total: 'Total',
+        lp_circulated: 'Circulated',
+        lp_remaining: 'Remaining in Pool',
+        lp_balance: 'Current Balance',
+        lp_pool_1_note: '100K used for liquidity maintenance',
+        lp_pool_2_note: 'Not yet used',
+        lp_main_note: 'Token balance in liquidity pool',
+        lp_circulated_note: 'used for liquidity maintenance',
+        lp_total_supply: 'LP Pool Total',
+        lp_in_pool: 'In Pool Total',
+        sync_loading: 'Syncing on-chain data...',
+        sync_done: 'On-chain data synced',
+        sync_error: 'Showing static data · sync failed',
+        sync_refresh: 'Refresh',
+      },
+      'zh-TW': {
+        back_home: '返回首頁',
+        lockup_title: 'BSC 鎖倉信息',
+        lockup_subtitle: 'Raqcoin 跨鏈兌換鎖倉地址明細',
+        total_supply: '總發行量',
+        locked_amount: '鎖倉總量',
+        locked_addresses: '鎖倉地址數',
+        lockup_ratio: '鎖倉比例',
+        address_list: '地址列表',
+        search_placeholder: '搜索地址或數量...',
+        address: '地址',
+        locked_pool_label: '鎖倉池',
+        locked_pool_desc: '62 個不可動用地址',
+        lp_pool_label: 'LP 補充池',
+        lp_pool_desc: '2 個流動性補充地址',
+        lp_pool_1: 'LP 補充地址 #1',
+        lp_pool_2: 'LP 補充地址 #2',
+        lp_total: '總量',
+        lp_circulated: '已流通',
+        lp_remaining: '在池剩餘',
+        lp_pool_1_note: '10 萬枚用於流動性維護',
+        lp_pool_2_note: '尚未動用',
+        lp_circulated_note: '枚用於流動性維護',
+        lp_total_supply: 'LP 補充池總量',
+        lp_in_pool: '在池總量',
+        sync_loading: '正在同步鏈上數據...',
+        sync_done: '鏈上數據已同步',
+        sync_error: '顯示靜態數據 · 鏈上同步失敗',
+        sync_refresh: '刷新數據',
+      },
+      ja: {
+        back_home: 'ホームに戻る',
+        lockup_title: 'BSC ロックアップ情報',
+        lockup_subtitle: 'Raqcoin クロスチェーン交換ロックアップアドレス',
+        total_supply: '総供給量',
+        locked_amount: 'ロックアップ総量',
+        locked_addresses: 'ロックアップアドレス数',
+        lockup_ratio: 'ロックアップ比率',
+        address_list: 'アドレス一覧',
+        search_placeholder: 'アドレスまたは数量を検索...',
+        address: 'アドレス',
+        locked_pool_label: 'ロックアッププール',
+        locked_pool_desc: '62 の非アクティブアドレス',
+        lp_pool_label: 'LP 供給プール',
+        lp_pool_desc: '2 つの流動性補充アドレス',
+        lp_pool_1: 'LP 供給アドレス #1',
+        lp_pool_2: 'LP 供給アドレス #2',
+        lp_total: '総量',
+        lp_circulated: '流通量',
+        lp_remaining: 'プール残高',
+        lp_pool_1_note: '10万枚が流動性維持に使用',
+        lp_pool_2_note: 'まだ使用されていません',
+        lp_circulated_note: '枚が流動性維持に使用',
+        lp_total_supply: 'LP プール総量',
+        lp_in_pool: 'プール内総量',
+        sync_loading: 'オンチェーンデータを同期中...',
+        sync_done: 'オンチェーンデータ同期完了',
+        sync_error: '静的データを表示中 · 同期失敗',
+        sync_refresh: '更新',
+      },
+      ru: {
+        back_home: 'На главную',
+        lockup_title: 'Информация о BSC Локапе',
+        lockup_subtitle: 'Адреса локапа кросс-чейн обмена Raqcoin',
+        total_supply: 'Общее предложение',
+        locked_amount: 'Всего заблокировано',
+        locked_addresses: 'Заблокированные адреса',
+        lockup_ratio: 'Доля локапа',
+        address_list: 'Список адресов',
+        search_placeholder: 'Поиск адреса или суммы...',
+        address: 'Адрес',
+        locked_pool_label: 'Заблокированный пул',
+        locked_pool_desc: '62 неактивных адреса',
+        lp_pool_label: 'LP Пул пополнения',
+        lp_pool_desc: '2 адреса пополнения ликвидности',
+        lp_pool_1: 'LP Адрес пополнения #1',
+        lp_pool_2: 'LP Адрес пополнения #2',
+        lp_total: 'Всего',
+        lp_circulated: 'В обращении',
+        lp_remaining: 'Осталось в пуле',
+        lp_pool_1_note: '100K использовано для поддержания ликвидности',
+        lp_pool_2_note: 'Ещё не использован',
+        lp_circulated_note: 'использовано для поддержания ликвидности',
+        lp_total_supply: 'Всего LP пул',
+        lp_in_pool: 'Всего в пуле',
+        sync_loading: 'Синхронизация данных с блокчейна...',
+        sync_done: 'Данные с блокчейна синхронизированы',
+        sync_error: 'Показаны статические данные · синхронизация не удалась',
+        sync_refresh: 'Обновить',
+      },
+      fr: {
+        back_home: 'Retour',
+        lockup_title: 'Informations sur le Lockup BSC',
+        lockup_subtitle: 'Adresses de lockup de swap cross-chain Raqcoin',
+        total_supply: 'Offre totale',
+        locked_amount: 'Total bloqué',
+        locked_addresses: 'Adresses bloquées',
+        lockup_ratio: 'Ratio de lockup',
+        address_list: 'Liste des adresses',
+        search_placeholder: 'Rechercher adresse ou montant...',
+        address: 'Adresse',
+        locked_pool_label: 'Pools bloqués',
+        locked_pool_desc: '62 adresses inactives',
+        lp_pool_label: 'Pool LP',
+        lp_pool_desc: '2 adresses de supplément de liquidité',
+        lp_pool_1: 'Adresse LP #1',
+        lp_pool_2: 'Adresse LP #2',
+        lp_total: 'Total',
+        lp_circulated: 'En circulation',
+        lp_remaining: 'Restant dans le pool',
+        lp_pool_1_note: '100K utilisés pour le maintien de la liquidité',
+        lp_pool_2_note: 'Pas encore utilisé',
+        lp_circulated_note: 'utilisés pour le maintien de la liquidité',
+        lp_total_supply: 'Total pool LP',
+        lp_in_pool: 'Total dans le pool',
+        sync_loading: 'Synchronisation des données on-chain...',
+        sync_done: 'Données on-chain synchronisées',
+        sync_error: 'Données statiques affichées · synchronisation échouée',
+        sync_refresh: 'Actualiser',
+      },
+      ar: {
+        back_home: 'العودة',
+        lockup_title: 'معلومات الحجز على BSC',
+        lockup_subtitle: 'عناوين حجز التبادل عبر السلاسل لـ Raqcoin',
+        total_supply: 'إجمالي المعروض',
+        locked_amount: 'إجمالي المحجوز',
+        locked_addresses: 'عناوين محجوزة',
+        lockup_ratio: 'نسبة الحجز',
+        address_list: 'قائمة العناوين',
+        search_placeholder: 'ابحث عن عنوان أو مبلغ...',
+        address: 'العنوان',
+        locked_pool_label: 'مجمع الحجز',
+        locked_pool_desc: '62 عنوان غير نشط',
+        lp_pool_label: 'مجمع LP',
+        lp_pool_desc: '2 عنوان تكملة السيولة',
+        lp_pool_1: 'عنوان LP #1',
+        lp_pool_2: 'عنوان LP #2',
+        lp_total: 'الإجمالي',
+        lp_circulated: 'المتداول',
+        lp_remaining: 'المتبقي في المجمع',
+        lp_pool_1_note: '100 ألف مستخدمة للحفاظ على السيولة',
+        lp_pool_2_note: 'لم تُستخدم بعد',
+        lp_circulated_note: 'مستخدمة للحفاظ على السيولة',
+        lp_total_supply: 'إجمالي مجمع LP',
+        lp_in_pool: 'الإجمالي في المجمع',
+        sync_loading: 'جارٍ مزامنة بيانات السلسلة...',
+        sync_done: 'تمت مزامنة بيانات السلسلة',
+        sync_error: 'عرض بيانات ثابتة · فشلت المزامنة',
+        sync_refresh: 'تحديث',
+      },
+      es: {
+        back_home: 'Volver',
+        lockup_title: 'Información de Lockup BSC',
+        lockup_subtitle: 'Direcciones de lockup de intercambio cross-chain Raqcoin',
+        total_supply: 'Suministro total',
+        locked_amount: 'Total bloqueado',
+        locked_addresses: 'Direcciones bloqueadas',
+        lockup_ratio: 'Proporción de lockup',
+        address_list: 'Lista de direcciones',
+        search_placeholder: 'Buscar dirección o cantidad...',
+        address: 'Dirección',
+        locked_pool_label: 'Pool Bloqueado',
+        locked_pool_desc: '62 direcciones inactivas',
+        lp_pool_label: 'Pool LP',
+        lp_pool_desc: '2 direcciones de suplemento de liquidez',
+        lp_pool_1: 'Dirección LP #1',
+        lp_pool_2: 'Dirección LP #2',
+        lp_total: 'Total',
+        lp_circulated: 'En circulación',
+        lp_remaining: 'Restante en el pool',
+        lp_pool_1_note: '100K usados para mantenimiento de liquidez',
+        lp_pool_2_note: 'Aún no utilizado',
+        lp_circulated_note: 'usados para mantenimiento de liquidez',
+        lp_total_supply: 'Total pool LP',
+        lp_in_pool: 'Total en el pool',
+        sync_loading: 'Sincronizando datos on-chain...',
+        sync_done: 'Datos on-chain sincronizados',
+        sync_error: 'Mostrando datos estáticos · sincronización fallida',
+        sync_refresh: 'Actualizar',
+      },
+    };
+
+    function getLang() {
+      const stored = localStorage.getItem('raq-lang');
+      if (stored && I18N[stored]) return stored;
+      const b = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+      if (b.startsWith('zh-tw') || b.startsWith('zh-hk')) return 'zh-TW';
+      if (b.startsWith('zh')) return 'zh';
+      if (b.startsWith('ja')) return 'ja';
+      if (b.startsWith('ru')) return 'ru';
+      if (b.startsWith('fr')) return 'fr';
+      if (b.startsWith('ar')) return 'ar';
+      if (b.startsWith('es')) return 'es';
+      return 'en';
+    }
+
+    function applyI18n(lang) {
+      const dict = I18N[lang] || I18N.en;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (dict[key]) el.placeholder = dict[key];
+      });
+      localStorage.setItem('raq-lang', lang);
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang === 'ar' ? 'ar' : lang === 'zh-TW' ? 'zh-TW' : lang;
+    }
+
+    applyI18n(getLang());
+    renderTable(LOCKUP_DATA);
+  </script>
+</body>
+</html>
