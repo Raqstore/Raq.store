@@ -20,18 +20,112 @@
     function setLaunchState() {
       const heroTitle = document.querySelector('.hero-title');
       const launchLabel = document.querySelector('.launch-label');
+      const titleText = IS_LAUNCHED ? LAUNCHED_TITLE : LAUNCHING_TITLE;
       if (IS_LAUNCHED) {
-        if (heroTitle) heroTitle.textContent = LAUNCHED_TITLE;
         if (launchLabel) launchLabel.textContent = LAUNCHED_LABEL;
         document.title = LAUNCHED_PAGE_TITLE;
       } else {
-        if (heroTitle) heroTitle.textContent = LAUNCHING_TITLE;
         if (launchLabel) launchLabel.textContent = LAUNCHING_LABEL;
         document.title = LAUNCHING_PAGE_TITLE;
+      }
+      if (heroTitle) {
+        heroTitle.textContent = titleText;
+        wrapTitleLetters(heroTitle);
+        initTitleProximity(heroTitle);
       }
       document.querySelectorAll('.hero-title, .launch-label').forEach(el => {
         el.classList.remove('launch-hidden');
       });
+    }
+
+    // 标题字母拆分（用于 variable-proximity 鼠标滑动效果，移植自 raqcoin.top）
+    function wrapTitleLetters(el) {
+      const text = el.textContent;
+      el.textContent = '';
+      const words = text.split(' ');
+      words.forEach((word, wi) => {
+        const ws = document.createElement('span');
+        ws.className = 'title-word';
+        Array.from(word).forEach(ch => {
+          const s = document.createElement('span');
+          s.textContent = ch;
+          s.className = 'title-char';
+          s.setAttribute('aria-hidden', 'true');
+          ws.appendChild(s);
+        });
+        el.appendChild(ws);
+        if (wi < words.length - 1) {
+          el.appendChild(document.createTextNode(' '));
+        }
+      });
+    }
+
+    let _titleProximityBound = false;
+    function initTitleProximity(title) {
+      if (_titleProximityBound) return;
+      _titleProximityBound = true;
+      const radius = 120;
+      const fromWght = 520, toWght = 1000;
+      const fromOpsz = 18, toOpsz = 72;
+      const fromSettings = `'wght' ${fromWght}, 'opsz' ${fromOpsz}`;
+
+      // 鼠标目标位置 + 平滑后位置（rAF 插值，保证每帧只更新一次，流畅不卡顿）
+      let targetX = -9999, targetY = -9999;
+      let smoothX = -9999, smoothY = -9999;
+      let rafId = null;
+      let charCache = [];
+      let rectCache = null;
+      let needsRecache = true;
+
+      const refreshCache = () => {
+        rectCache = title.getBoundingClientRect();
+        charCache = Array.from(title.querySelectorAll('.title-char')).map(c => {
+          const cr = c.getBoundingClientRect();
+          return { el: c, cx: cr.left + cr.width / 2 - rectCache.left, cy: cr.top + cr.height / 2 - rectCache.top };
+        });
+        needsRecache = false;
+      };
+
+      const apply = () => {
+        rafId = null;
+        if (needsRecache) refreshCache();
+        // 线性插值平滑（raqcoin.top 每帧同步更新，此处用 lerp 复刻其丝滑跟随感）
+        smoothX += (targetX - smoothX) * 0.35;
+        smoothY += (targetY - smoothY) * 0.35;
+        for (let i = 0; i < charCache.length; i++) {
+          const c = charCache[i];
+          const dx = smoothX - c.cx, dy = smoothY - c.cy;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d >= radius) {
+            if (c.el.style.fontVariationSettings !== fromSettings) {
+              c.el.style.fontVariationSettings = fromSettings;
+            }
+            continue;
+          }
+          const t = 1 - d / radius;
+          const w = fromWght + (toWght - fromWght) * t;
+          const o = fromOpsz + (toOpsz - fromOpsz) * t;
+          c.el.style.fontVariationSettings = `'wght' ${w}, 'opsz' ${o}`;
+        }
+        // 鼠标静止后继续插值直到收敛，然后停帧
+        if (Math.abs(targetX - smoothX) > 0.1 || Math.abs(targetY - smoothY) > 0.1) {
+          rafId = requestAnimationFrame(apply);
+        }
+      };
+
+      const schedule = () => {
+        if (rafId === null) rafId = requestAnimationFrame(apply);
+      };
+
+      window.addEventListener('mousemove', e => {
+        if (needsRecache && rectCache === null) refreshCache();
+        if (!rectCache) return;
+        targetX = e.clientX - rectCache.left;
+        targetY = e.clientY - rectCache.top;
+        schedule();
+      });
+      window.addEventListener('scroll', () => { needsRecache = true; }, { passive: true });
+      window.addEventListener('resize', () => { needsRecache = true; });
     }
     
     if (document.readyState === 'loading') {
@@ -42,7 +136,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans:wght@300;400;500;700&family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after {
       margin: 0;
@@ -293,12 +387,27 @@
     }
 
     .hero-title {
-      font-size: clamp(2rem, 5vw, 4rem);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
+      font-family: 'Roboto Flex', 'Outfit', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans', system-ui, -apple-system, sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 400;
+      font-variation-settings: 'wght' 520, 'opsz' 18;
+      letter-spacing: -0.06em;
+      line-height: 0.9;
       margin-bottom: 24px;
       color: var(--text-primary);
+      will-change: transform, opacity;
+    }
+
+    .hero-title .title-word {
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .hero-title .title-char {
+      display: inline-block;
+      font-variation-settings: 'wght' 520, 'opsz' 18;
+      will-change: font-variation-settings;
+      transition: none;
     }
 
     .hero-subtitle {
@@ -932,6 +1041,7 @@
       align-items: flex-end;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 </head>
 <body>
   <div class="bg-effects">
@@ -1048,14 +1158,11 @@
           </svg>
           <span data-i18n="contact_debox_chat">Debox Chat</span>
         </a>
-        <a href="https://m.debox.pro/group?id=hbufcby5&code=7o2ptfgm" target="_blank" rel="noopener noreferrer" class="contact-link">
+        <a href="https://btxchat.com/#/#Raq:chat.btxchat.com" target="_blank" rel="noopener noreferrer" class="contact-link">
           <svg class="contact-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          <span data-i18n="contact_debox_club">Debox Club</span>
+          <span data-i18n="contact_debox_club">BTX</span>
         </a>
         <a href="mailto:Raq.store@protonmail.com" class="contact-link">
           <span class="contact-icon">✉</span>
@@ -1064,6 +1171,13 @@
         <a href="https://t.me/RaqStoreX" target="_blank" rel="noopener noreferrer" class="contact-link">
           <span class="contact-icon">✈</span>
           <span data-i18n="contact_telegram">Telegram Channel</span>
+        </a>
+        <a href="how-to-exchange.html" class="contact-link">
+          <svg class="contact-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          <span data-i18n="contact_how_to_exchange">兑换说明</span>
         </a>
         <a href="lockup.html" class="contact-link">
           <svg class="contact-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1108,10 +1222,11 @@
         'launched': '已上线',
         'enter_store': '进入兑换店',
         'contact_debox_chat': 'Debox Chat',
-        'contact_debox_club': 'Debox Club',
+        'contact_debox_club': 'BTX',
         'contact_email': 'Raq.store@protonmail.com',
         'contact_telegram': 'Telegram 频道',
-        'contact_lockup': 'BSC 锁仓信息'
+        'contact_lockup': 'BSC 锁仓信息',
+        'contact_how_to_exchange': '兑换说明'
       },
       'en': {
         'title': 'Exchange Coming Soon',
@@ -1138,10 +1253,11 @@
         'launched': 'Launched',
         'enter_store': 'Enter Exchange',
         'contact_debox_chat': 'Debox Chat',
-        'contact_debox_club': 'Debox Club',
+        'contact_debox_club': 'BTX',
         'contact_email': 'Raq.store@protonmail.com',
         'contact_telegram': 'Telegram Channel',
-        'contact_lockup': 'BSC Lockup Info'
+        'contact_lockup': 'BSC Lockup Info',
+        'contact_how_to_exchange': 'How to Exchange'
       },
       'zh-TW': {
         'title': '兌換店即將上線',
@@ -1168,10 +1284,11 @@
         'launched': '已上線',
         'enter_store': '進入兌換店',
         'contact_debox_chat': 'Debox Chat',
-        'contact_debox_club': 'Debox Club',
+        'contact_debox_club': 'BTX',
         'contact_email': 'Raq.store@protonmail.com',
         'contact_telegram': 'Telegram 頻道',
-        'contact_lockup': 'BSC 鎖倉信息'
+        'contact_lockup': 'BSC 鎖倉信息',
+        'contact_how_to_exchange': '兌換說明'
       },
       'ja': {
         'title': '交換所近日公開',
@@ -1198,10 +1315,11 @@
         'launched': '公開済み',
         'enter_store': '交換所に入る',
         'contact_debox_chat': 'Debox Chat',
-        'contact_debox_club': 'Debox Club',
+        'contact_debox_club': 'BTX',
         'contact_email': 'Raq.store@protonmail.com',
         'contact_telegram': 'Telegram チャンネル',
-        'contact_lockup': 'BSC ロックアップ情報'
+        'contact_lockup': 'BSC ロックアップ情報',
+        'contact_how_to_exchange': '交換の手順'
       },
       'ru': {
         'title': 'Магазин скоро откроется',
@@ -1228,10 +1346,11 @@
         'launched': 'Запущено',
         'enter_store': 'Перейти в магазин',
         'contact_debox_chat': 'Debox Chat',
-        'contact_debox_club': 'Debox Club',
+        'contact_debox_club': 'BTX',
         'contact_email': 'Raq.store@protonmail.com',
         'contact_telegram': 'Канал Telegram',
-        'contact_lockup': 'Информация о BSC Локапе'
+        'contact_lockup': 'Информация о BSC Локапе',
+        'contact_how_to_exchange': 'Как обменять'
       },
       'fr': {
         'title': 'Boutique Bientôt Disponible',
@@ -1258,10 +1377,11 @@
         'launched': 'Lancé',
         'enter_store': 'Accéder à la boutique',
         'contact_debox_chat': 'Debox Chat',
-        'contact_debox_club': 'Debox Club',
+        'contact_debox_club': 'BTX',
         'contact_email': 'Raq.store@protonmail.com',
         'contact_telegram': 'Canal Telegram',
-        'contact_lockup': 'Infos Lockup BSC'
+        'contact_lockup': 'Infos Lockup BSC',
+        'contact_how_to_exchange': "Guide d'échange"
       },
       'ar': {
         'title': 'المتجر قريباً',
@@ -1288,9 +1408,11 @@
         'launched': 'تم الإطلاق',
         'enter_store': 'الدخول إلى المتجر',
         'contact_debox_chat': 'Debox Chat',
-        'contact_debox_club': 'Debox Club',
+        'contact_debox_club': 'BTX',
         'contact_email': 'Raq.store@protonmail.com',
-        'contact_telegram': 'قناة تيليجرام'
+        'contact_telegram': 'قناة تيليجرام',
+        'contact_lockup': 'معلومات الحجز على BSC',
+        'contact_how_to_exchange': 'دليل الصرف'
       },
       'es': {
         'title': 'Tienda Pronto Disponible',
@@ -1317,10 +1439,11 @@
         'launched': 'Lanzado',
         'enter_store': 'Entrar a la tienda',
         'contact_debox_chat': 'Debox Chat',
-        'contact_debox_club': 'Debox Club',
+        'contact_debox_club': 'BTX',
         'contact_email': 'Raq.store@protonmail.com',
         'contact_telegram': 'Canal de Telegram',
-        'contact_lockup': 'Info Lockup BSC'
+        'contact_lockup': 'Info Lockup BSC',
+        'contact_how_to_exchange': 'Guía de intercambio'
       }
     };
 
@@ -1395,6 +1518,10 @@
             } else {
               el.textContent = translations[lang][key];
             }
+            if (key === 'title_launched' && typeof wrapTitleLetters === 'function') {
+              wrapTitleLetters(el);
+              window._lastTitleText = translations[lang][key];
+            }
             el.classList.remove('lang-changing');
           }, 150);
         }
@@ -1444,7 +1571,13 @@
         const launchLabel = document.querySelector('.launch-label');
         
         if (heroTitle && translations[currentLang]['title_launched']) {
-          heroTitle.textContent = translations[currentLang]['title_launched'];
+          const newText = translations[currentLang]['title_launched'];
+          if (window._lastTitleText !== newText) {
+            window._lastTitleText = newText;
+            heroTitle.textContent = newText;
+            wrapTitleLetters(heroTitle);
+            initTitleProximity(heroTitle);
+          }
         }
         if (launchLabel && translations[currentLang]['launch_date_launched']) {
           launchLabel.textContent = translations[currentLang]['launch_date_launched'];
@@ -1541,320 +1674,100 @@
     contractAddressEl.addEventListener('click', copyToClipboard);
     setLanguage(currentLang);
 
+    // 波浪光球点阵动画（移植自 raqcoin.top，three.js 渲染，自动播放不跟随鼠标）
     class NetworkEffect {
       constructor(canvas) {
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
-        this.nodes = [];
-        this.entangledPairs = [];
         this.animationId = null;
+        this.isVisible = true;
         this.time = 0;
-        this.resize();
-        this.initNodes();
-        this.initEntanglement();
-        this.animate();
+        if (typeof THREE === 'undefined') return;
+        this.spacing = 110;
+        this.rows = 34;
+        this.cols = 50;
+        this.waveAmp = 24;
+        this.init();
         window.addEventListener('resize', () => this.resize());
+        this.observer = new IntersectionObserver(([entry]) => {
+          this.isVisible = entry.isIntersecting;
+        }, { threshold: 0 });
+        this.observer.observe(this.canvas);
+        this.animate();
+      }
+
+      init() {
+        const w = this.canvas.clientWidth || window.innerWidth;
+        const h = this.canvas.clientHeight || window.innerHeight;
+        const bgColor = 0x000000;
+        this.scene = new THREE.Scene();
+        this.scene.fog = new THREE.Fog(bgColor, 1800, 9000);
+        this.camera = new THREE.PerspectiveCamera(58, w / h, 1, 10000);
+        this.camera.position.set(0, 340, 1180);
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true });
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+        this.renderer.setSize(w, h);
+        this.renderer.setClearColor(bgColor, 0);
+        this.geometry = new THREE.BufferGeometry();
+        const positions = [];
+        const colors = [];
+        for (let row = 0; row < this.rows; row++) {
+          for (let col = 0; col < this.cols; col++) {
+            positions.push(
+              row * this.spacing - this.rows * this.spacing / 2,
+              0,
+              col * this.spacing - this.cols * this.spacing / 2
+            );
+            colors.push(0.62, 0.76, 1.0);
+          }
+        }
+        this.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        this.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        this.material = new THREE.PointsMaterial({
+          size: 5.4,
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.82,
+          sizeAttenuation: true
+        });
+        this.points = new THREE.Points(this.geometry, this.material);
+        this.scene.add(this.points);
       }
 
       resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-      }
-
-      initNodes() {
-        const nodeCount = Math.floor((this.canvas.width * this.canvas.height) / 22000);
-        this.nodes = [];
-        for (let i = 0; i < nodeCount; i++) {
-          const isQuantum = Math.random() > 0.6;
-          this.nodes.push({
-            x: Math.random() * this.canvas.width,
-            y: Math.random() * this.canvas.height,
-            vx: (Math.random() - 0.5) * 0.25,
-            vy: (Math.random() - 0.5) * 0.25,
-            radius: isQuantum ? Math.random() * 2.5 + 1.5 : Math.random() * 2 + 1,
-            alpha: Math.random() * 0.5 + 0.3,
-            isQuantum: isQuantum,
-            qubitState: isQuantum ? Math.random() > 0.5 ? 0 : 1 : -1,
-            qubitPhase: Math.random() * Math.PI * 2,
-            probability: 1,
-            tunnelTimer: 0,
-            tunnelTarget: null
-          });
-        }
-      }
-
-      initEntanglement() {
-        this.entangledPairs = [];
-        const shuffled = [...this.nodes].sort(() => Math.random() - 0.5);
-        for (let i = 0; i < shuffled.length - 1; i += 2) {
-          if (shuffled[i].isQuantum && shuffled[i + 1].isQuantum) {
-            this.entangledPairs.push([shuffled[i], shuffled[i + 1]]);
-          }
-        }
+        if (!this.renderer) return;
+        const w = this.canvas.clientWidth || window.innerWidth;
+        const h = this.canvas.clientHeight || window.innerHeight;
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h);
       }
 
       animate() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.time += 0.016;
-        this.updateNodes();
-        this.updateEntanglement();
-        this.drawProbabilityClouds();
-        this.drawEntangledLines();
-        this.drawLines();
-        this.drawNodes();
-        this.drawQuantumEffects();
         this.animationId = requestAnimationFrame(() => this.animate());
-      }
-
-      updateNodes() {
-        this.nodes.forEach(node => {
-          if (node.tunnelTarget) {
-            node.tunnelTimer += 0.05;
-            const t = node.tunnelTimer;
-            if (t >= 1) {
-              node.x = node.tunnelTarget.x;
-              node.y = node.tunnelTarget.y;
-              node.tunnelTarget = null;
-              node.tunnelTimer = 0;
-              node.qubitState = node.qubitState === 0 ? 1 : 0;
-            } else {
-              const eased = this.easeInOutQuad(t);
-              node.x = node.x * (1 - eased) + node.tunnelTarget.x * eased;
-              node.y = node.y * (1 - eased) + node.tunnelTarget.y * eased;
-            }
-          } else {
-            node.x += node.vx;
-            node.y += node.vy;
-
-            if (node.x < 0 || node.x > this.canvas.width) {
-              node.vx *= -1;
-              node.x = Math.max(0, Math.min(this.canvas.width, node.x));
-            }
-            if (node.y < 0 || node.y > this.canvas.height) {
-              node.vy *= -1;
-              node.y = Math.max(0, Math.min(this.canvas.height, node.y));
-            }
-
-            if (node.isQuantum && Math.random() < 0.002) {
-              const candidates = this.nodes.filter(n => n !== node && n.isQuantum);
-              if (candidates.length > 0) {
-                node.tunnelTarget = candidates[Math.floor(Math.random() * candidates.length)];
-                node.tunnelTimer = 0;
-              }
-            }
+        if (!this.isVisible || !this.geometry) return;
+        const arr = this.geometry.attributes.position.array;
+        let idx = 0;
+        for (let row = 0; row < this.rows; row++) {
+          for (let col = 0; col < this.cols; col++) {
+            arr[idx * 3 + 1] =
+              Math.sin((row + this.time) * 0.28) * this.waveAmp +
+              Math.sin((col + this.time) * 0.42) * this.waveAmp;
+            idx++;
           }
-
-          if (node.isQuantum) {
-            node.qubitPhase += 0.03;
-            node.probability = 0.5 + 0.3 * Math.sin(node.qubitPhase);
-            if (Math.random() < 0.001) {
-              node.qubitState = node.qubitState === 0 ? 1 : 0;
-            }
-          }
-        });
-      }
-
-      updateEntanglement() {
-        this.entangledPairs.forEach(pair => {
-          if (Math.random() < 0.005) {
-            const newState = pair[0].qubitState === 0 ? 1 : 0;
-            pair[0].qubitState = newState;
-            pair[1].qubitState = newState;
-          }
-        });
-      }
-
-      drawProbabilityClouds() {
-        this.nodes.forEach(node => {
-          if (node.isQuantum && node.probability > 0.5) {
-            const cloudRadius = node.radius * (8 + 4 * Math.sin(this.time * 2 + node.qubitPhase));
-            const gradient = this.ctx.createRadialGradient(
-              node.x, node.y, 0,
-              node.x, node.y, cloudRadius
-            );
-            const alpha = node.probability * 0.08;
-            gradient.addColorStop(0, `rgba(100, 200, 255, ${alpha})`);
-            gradient.addColorStop(0.5, `rgba(150, 150, 255, ${alpha * 0.5})`);
-            gradient.addColorStop(1, 'rgba(100, 200, 255, 0)');
-
-            this.ctx.beginPath();
-            this.ctx.arc(node.x, node.y, cloudRadius, 0, Math.PI * 2);
-            this.ctx.fillStyle = gradient;
-            this.ctx.fill();
-          }
-        });
-      }
-
-      drawEntangledLines() {
-        this.entangledPairs.forEach(pair => {
-          const dx = pair[0].x - pair[1].x;
-          const dy = pair[0].y - pair[1].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 200) {
-            const midX = (pair[0].x + pair[1].x) / 2;
-            const midY = (pair[0].y + pair[1].y) / 2;
-            const perpX = -dy * 0.2;
-            const perpY = dx * 0.2;
-
-            const wave = Math.sin(this.time * 3 + pair[0].qubitPhase) * 20;
-
-            this.ctx.beginPath();
-            this.ctx.moveTo(pair[0].x, pair[0].y);
-            this.ctx.quadraticCurveTo(
-              midX + perpX + wave,
-              midY + perpY,
-              pair[1].x, pair[1].y
-            );
-            const opacity = 0.4 * (1 - distance / 200);
-            this.ctx.strokeStyle = pair[0].qubitState === 0 
-              ? `rgba(100, 200, 255, ${opacity})`
-              : `rgba(200, 100, 255, ${opacity})`;
-            this.ctx.lineWidth = 2;
-            this.ctx.stroke();
-
-            const particleProgress = (Date.now() / 1500) % 1;
-            const isForward = particleProgress < 0.5;
-            const t = isForward ? particleProgress * 2 : (1 - particleProgress) * 2;
-            const easedT = this.easeInOutQuad(t);
-            
-            let particleX, particleY;
-            if (easedT < 1) {
-              const segMidX = pair[0].x + (midX + perpX + wave - pair[0].x) * easedT;
-              const segMidY = pair[0].y + (midY + perpY - pair[0].y) * easedT;
-              particleX = pair[0].x + (segMidX - pair[0].x) * easedT;
-              particleY = pair[0].y + (segMidY - pair[0].y) * easedT;
-            } else {
-              const t2 = easedT - 1;
-              particleX = midX + perpX + wave + (pair[1].x - (midX + perpX + wave)) * t2;
-              particleY = midY + perpY + (pair[1].y - (midY + perpY)) * t2;
-            }
-
-            this.ctx.beginPath();
-            this.ctx.arc(particleX, particleY, 3, 0, Math.PI * 2);
-            this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 1.5})`;
-            this.ctx.fill();
-          }
-        });
-      }
-
-      drawLines() {
-        const maxDistance = 120;
-        this.nodes.forEach((node1, i) => {
-          this.nodes.slice(i + 1).forEach(node2 => {
-            const dx = node1.x - node2.x;
-            const dy = node1.y - node2.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < maxDistance) {
-              const opacity = (1 - distance / maxDistance) * 0.25;
-              const isBothQuantum = node1.isQuantum && node2.isQuantum;
-              const color = isBothQuantum 
-                ? `rgba(150, 180, 255, ${opacity})`
-                : `rgba(201, 162, 39, ${opacity})`;
-
-              this.ctx.beginPath();
-              this.ctx.strokeStyle = color;
-              this.ctx.lineWidth = isBothQuantum ? 1.5 : 1;
-              this.ctx.setLineDash(isBothQuantum ? [4, 4] : []);
-              this.ctx.moveTo(node1.x, node1.y);
-              this.ctx.lineTo(node2.x, node2.y);
-              this.ctx.stroke();
-              this.ctx.setLineDash([]);
-
-              const progress = (Date.now() / 2500) % 1;
-              const waveX = node1.x + (node2.x - node1.x) * progress;
-              const waveY = node1.y + (node2.y - node1.y) * progress;
-              
-              this.ctx.beginPath();
-              this.ctx.arc(waveX, waveY, isBothQuantum ? 2.5 : 2, 0, Math.PI * 2);
-              this.ctx.fillStyle = isBothQuantum 
-                ? `rgba(150, 200, 255, ${opacity * 2})`
-                : `rgba(201, 162, 39, ${opacity * 2})`;
-              this.ctx.fill();
-            }
-          });
-        });
-      }
-
-      drawNodes() {
-        this.nodes.forEach(node => {
-          if (node.isQuantum) {
-            const glowRadius = node.radius * (4 + 2 * Math.sin(this.time * 3 + node.qubitPhase));
-            const gradient = this.ctx.createRadialGradient(
-              node.x, node.y, 0,
-              node.x, node.y, glowRadius
-            );
-
-            const mainColor = node.qubitState === 0 ? [100, 200, 255] : [200, 100, 255];
-            gradient.addColorStop(0, `rgba(${mainColor[0]}, ${mainColor[1]}, ${mainColor[2]}, ${node.alpha})`);
-            gradient.addColorStop(0.5, `rgba(${mainColor[0]}, ${mainColor[1]}, ${mainColor[2]}, ${node.alpha * 0.3})`);
-            gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
-
-            this.ctx.beginPath();
-            this.ctx.arc(node.x, node.y, glowRadius, 0, Math.PI * 2);
-            this.ctx.fillStyle = gradient;
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-            this.ctx.fillStyle = `rgba(${mainColor[0]}, ${mainColor[1]}, ${mainColor[2]}, ${node.alpha})`;
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(node.x, node.y, node.radius * 1.5, 0, Math.PI * 2);
-            this.ctx.strokeStyle = `rgba(${mainColor[0]}, ${mainColor[1]}, ${mainColor[2]}, ${node.alpha * 0.5})`;
-            this.ctx.lineWidth = 1;
-            this.ctx.stroke();
-          } else {
-            const gradient = this.ctx.createRadialGradient(
-              node.x, node.y, 0,
-              node.x, node.y, node.radius * 3
-            );
-            gradient.addColorStop(0, `rgba(201, 162, 39, ${node.alpha})`);
-            gradient.addColorStop(1, 'rgba(201, 162, 39, 0)');
-
-            this.ctx.beginPath();
-            this.ctx.arc(node.x, node.y, node.radius * 3, 0, Math.PI * 2);
-            this.ctx.fillStyle = gradient;
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-            this.ctx.fillStyle = `rgba(201, 162, 39, ${node.alpha})`;
-            this.ctx.fill();
-          }
-        });
-      }
-
-      drawQuantumEffects() {
-        this.nodes.forEach(node => {
-          if (node.isQuantum && Math.random() < 0.05) {
-            const rippleCount = 3;
-            for (let i = 0; i < rippleCount; i++) {
-              const delay = this.time * 10 + i * 0.3;
-              const radius = (delay % 1) * 20;
-              const alpha = (1 - delay % 1) * 0.3;
-              
-              this.ctx.beginPath();
-              this.ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
-              this.ctx.strokeStyle = `rgba(150, 200, 255, ${alpha})`;
-              this.ctx.lineWidth = 1;
-              this.ctx.stroke();
-            }
-          }
-        });
-      }
-
-      easeInOutQuad(t) {
-        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        }
+        this.geometry.attributes.position.needsUpdate = true;
+        this.points.rotation.y += 0.0008;
+        this.camera.lookAt(this.scene.position);
+        this.renderer.render(this.scene, this.camera);
+        this.time += 0.06;
       }
 
       destroy() {
-        if (this.animationId) {
-          cancelAnimationFrame(this.animationId);
-        }
-        window.removeEventListener('resize', () => this.resize());
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+        if (this.observer) this.observer.disconnect();
+        if (this.geometry) this.geometry.dispose();
+        if (this.material) this.material.dispose();
+        if (this.renderer) this.renderer.dispose();
       }
     }
 
